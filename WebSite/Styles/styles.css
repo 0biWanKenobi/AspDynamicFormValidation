@@ -1,0 +1,9 @@
+﻿.myform-input {
+    display:block;
+    margin: 10px;
+    padding: 3px;
+    -ms-border-radius:3px;
+    border-radius:3px;
+    border-width:1px;
+    border-color: lightgray;
+}

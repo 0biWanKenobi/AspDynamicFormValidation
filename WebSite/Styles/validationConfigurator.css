@@ -1,0 +1,31 @@
+﻿.k-editor, .k-editor-child {
+    padding: 10px;
+    margin: 10px;
+}
+
+.k-editor {
+    border: 1px solid lightgray;
+    -ms-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.editor-field {
+    margin: 10px;
+}
+
+.editor-plus-sign {
+    cursor: pointer;
+}
+
+.ruleOperatorDropDownlist.or {
+    width: 100px;
+}
+
+.ruleOperatorDropDownlist.and {
+    width: 55px;
+}
+
+
+.no-display {
+    display: none;
+}
