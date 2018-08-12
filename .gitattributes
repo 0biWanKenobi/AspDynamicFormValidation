@@ -1,4 +1,9 @@
+############################################################################
+# Have GitHub linguist propery categorize the project (by ignoring the js folder, in this case)
 ###############################################################################
+Website/Scripts/* linguist-vendored
+
+############################################################################
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
 * text=auto
