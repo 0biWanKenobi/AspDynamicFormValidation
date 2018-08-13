@@ -3,7 +3,7 @@
 namespace WebSite.Models
 {
     [Table(Name = "vconfig_validation")]
-    internal class Configuration
+    public class Configuration
     {
         [Column(Name = "config_formula")]
         public string ConfigFormula {get; set;}

@@ -23,3 +23,7 @@
     </span>
 </script>
 
+<script type="kendo/html" id="flowAssociationTemplate">
+    <span class="#=value=='' ? 'k-state-disabled': ''#" title="#=title#">#=name#</span>
+</script>
+

@@ -20,16 +20,17 @@
 <body>
     <kendo:editorTemplate runat="server"/>
     <form id="configuratorForm">
-        <a href="#" class="k-primary configurator-add-rulegroup" data-rule-name="1" data-last-editor-id="1">Aggiungi gruppo</a>
-        <a href="#" class="k-primary configurator-save-rule" data-rule-name="1">Salva regola</a>
+        <a href="#" class="k-primary configurator-add-rulegroup" data-rule-name="rule-1" data-last-editor-id="1">Aggiungi gruppo</a>
+        <a href="#" class="k-primary configurator-save-rule" data-rule-name="rule-1" data-bind="enabled: isEnabled('savingRule|rule-1')">Salva regola</a>
+        <input type="hidden" class="rule-json" data-rule-name="rule-1" />
         <div class="k-editor">
-            Regola 1<input type="text" class="editor-field rule-description" data-rule-name="1" placeholder="Descrizione"/>
-            
+            Regola 1<input type="text" class="editor-field rule-description k-textbox" data-rule-name="rule-1" placeholder="Descrizione"/>
+            Tripletta associata: <div class="flow-association" data-rule-name="rule-1"></div>
             <div>
-                Definizione Regola:<span class="rule-definition" data-rule-name="1"></span>
+                Definizione Regola:<span class="rule-definition" data-rule-name="rule-1"></span>
             </div>
             
-            <div class="editor-rule-group" id="editor-1"  data-rule-name="1">
+            <div class="editor-rule-group" id="editor-1"  data-rule-name="rule-1">
                 <p class="editor-field rule-group-name" data-editor="editor-1">Gruppo 1</p>
                 <input class="editor-rule" type="hidden" data-editor="editor-1"/>
                 <div class="editor-field">
@@ -40,7 +41,7 @@
                     <span class="k-icon k-i-plus editor-plus-sign" data-editor="editor-1" title="Aggiungi campo obbligatorio"></span>
                 </div>
                 <div class="editor-field">
-                    <a href="#" class="k-primary editor-save-button" data-rule-name="1" data-editor="editor-1">Salva</a>
+                    <a href="#" class="k-primary editor-save-button" data-rule-name="rule-1" data-editor="editor-1">Salva</a>
                 </div>
             </div>
         </div>
