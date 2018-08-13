@@ -33,7 +33,7 @@
                 <p class="editor-field rule-group-name" data-editor="editor-1">Gruppo 1</p>
                 <input class="editor-rule" type="hidden" data-editor="editor-1"/>
                 <div class="editor-field">
-                    <div class="logicOperatorDropdownlist"></div> condizione.
+                    <div class="logicOperatorDropdownlist" data-editor="editor-1"></div> condizione.
                 </div>
                 <div class="editor-field">
                     <div class="fieldSelectionDropdownlist" data-editor="editor-1"></div> è valorizzato.

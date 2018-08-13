@@ -4,7 +4,7 @@
         <p class="editor-field rule-group-name" data-editor="editor-#=editorId#">Gruppo #=editorId#</p>
         <input class="editor-rule" type="hidden" data-editor="editor-#=editorId#"/>
         <div class="editor-field">
-            <div class="logicOperatorDropdownlist"></div> condizione.
+            <div class="logicOperatorDropdownlist" data-editor="editor-#=editorId#"></div> condizione.
         </div>
         <div class="editor-field">
             <div class="fieldSelectionDropdownlist" data-editor="editor-#=editorId#"></div> è valorizzato.

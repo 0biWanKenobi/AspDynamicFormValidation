@@ -33,12 +33,14 @@
     var saveRule = function(e) {
         var ruleName = e.sender.element.data().ruleName;
         var ruleSegment = $(".rule-definition[data-rule-name=" + ruleName + "] .ruleSegment");
+        configuration[ruleName]['rulegroups'] = new Array();
         ruleSegment.each(function(i, segment) {
             var ddlist = $(segment).find("*[data-role=dropdownlist]");
             var operator = ddlist.length ? ddlist.eq(0).data("kendoDropDownList").value() : null;
+            var editorElementId = $(segment).data().editor;
 
-            if(operator) {
-                var editorElementId = $(segment).data().editor;
+            configuration[ruleName]['rulegroups'].push(editorElementId);
+            if(operator) {                
                 configuration[ruleName][editorElementId]['prevRuleGroupRelationship'] = operator;
             }
         });
@@ -48,26 +50,24 @@
     //save a rule group
     var saveRuleGroup = function (e) {
         e.sender.enable(false);
-        var editorElementId = $(e.sender.element).data().editor;
-        var ruleHolder = $(".editor-rule[data-editor=" + editorElementId + "]");
-        var logicalConditionWidget = $("#" + editorElementId + " .k-widget .logicOperatorDropdownlist")
-            .data("kendoDropDownList");
-        var logicalCondition = logicalConditionWidget.value();
-        var dropdowns = $("#" + editorElementId + " .k-widget .fieldSelectionDropdownlist");
+        var editorElementId =           $(e.sender.element).data().editor;
+        var ruleHolder =                $(".editor-rule[data-editor=" + editorElementId + "]");
+        var logicalConditionWidget =    $("#" + editorElementId + " .k-widget .logicOperatorDropdownlist").data("kendoDropDownList");
+        var logicalCondition =          logicalConditionWidget.value();
+        var fieldWidgets =              $("#" + editorElementId + " .k-widget .fieldSelectionDropdownlist");
         
-        var ruleName = $("#" + editorElementId).data().ruleName;
-        var ruleDescription = $(".rule-description[data-rule-name=" + ruleName + "]").val();
+        var ruleName =                  $("#" + editorElementId).data().ruleName;
+        var ruleDescription =           $(".rule-description[data-rule-name=" + ruleName + "]").val();
 
         //init rule node if undefined
         configuration[ruleName] = configuration[ruleName] ||
         {
-            description: ruleDescription,
-            logicOperatorSequence: new Array()
+            description: ruleDescription
         };
 
         configuration[ruleName][editorElementId] = {
             operator: logicalCondition,
-            fields: dropdowns.map(function (i, d) { return $(d).data("kendoDropDownList").value() }).toArray()
+            fields: fieldWidgets.map(function (i, d) { return $(d).data("kendoDropDownList").value() }).toArray()
         }
 
         var operationType = ruleHolder.val().length ? "updated" : "created";
@@ -81,19 +81,6 @@
         $("#" + editorElementId + " .editor-save-button").data("kendoButton").enable(true);
     }
 
-    var initFieldSelectionDropdown = function () {
-        var dropdowns = $(".editor-field > .fieldSelectionDropdownlist");
-        //avoid reinitializing kendo widgets, just pick the one new div
-        dropdowns.eq(dropdowns.length - 1).kendoDropDownList({
-            dataSource: fieldNameValues,
-            dataTextField: "name",
-            dataValueField: "value",
-            change: function (e) {
-                var editorElementId = $(e.sender.element).data().editor;
-                $("#" + editorElementId + " .editor-save-button").data("kendoButton").enable(true);
-            }
-        });
-    }
 
     var initDropdowns = function (dropdowns, dataSource, changeFn) {
         //avoid reinitializing kendo widgets, just pick the one new div
@@ -114,7 +101,7 @@
                     "</div>";
 
                 $("#" + editorElementId + " .editor-save-button").parent().before(newFieldHtml);
-                initFieldSelectionDropdown();
+                initDropdowns($(".editor-field > .fieldSelectionDropdownlist:not(.k-widget)"), fieldNameValues, fieldSelectionChangeFn);
             }
         );
     }
@@ -174,7 +161,7 @@
         var ruleGroups = $(".editor-rule-group[data-rule-name=" + ruleId + "]");
         ruleGroups.eq(ruleGroups.length-1).after(initializedTemplate);
 
-        initFieldSelectionDropdown();
+        initDropdowns($(".editor-field > .fieldSelectionDropdownlist:not(.k-widget)"), fieldNameValues, fieldSelectionChangeFn);
 
         initDropdowns($(".editor-field > .logicOperatorDropdownlist"), logicalFieldGroupOperators, fieldSelectionChangeFn);
         //add new field to the rule
@@ -200,7 +187,7 @@
         //to-do: for each rule defined on db
         initNewRulegroupButton(1);
 
-        initFieldSelectionDropdown();
+        initDropdowns($(".editor-field > .fieldSelectionDropdownlist:not(.k-widget)"), fieldNameValues, fieldSelectionChangeFn);
 
         initDropdowns($(".logicOperatorDropdownlist"), logicalFieldGroupOperators, fieldSelectionChangeFn);
         //add new field to the rule
