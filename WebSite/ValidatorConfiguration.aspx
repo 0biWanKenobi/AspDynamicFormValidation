@@ -20,32 +20,36 @@
 <body>
     <kendo:editorTemplate runat="server"/>
     <form id="configuratorForm">
-        <a href="#" class="k-primary configurator-add-rulegroup" data-rule-name="rule-1" data-last-editor-id="1">Aggiungi gruppo</a>
-        <a href="#" class="k-primary configurator-save-rule" data-rule-name="rule-1" data-bind="enabled: isEnabled('savingRule|rule-1')">Salva regola</a>
-        <input type="hidden" class="rule-json" data-rule-name="rule-1" />
-        <div class="k-editor">
-            Regola 1<input type="text" class="editor-field rule-description k-textbox" data-rule-name="rule-1" placeholder="Descrizione"/>
-            Tripletta associata: <div class="flow-association" data-rule-name="rule-1"></div>
-            <div>
-                Definizione Regola:<span class="rule-definition" data-rule-name="rule-1"></span>
+        <div id="rule1" class="k-editor">
+            <div class="k-editor-header">
+                <div>
+                    Regola 1<input type="text" class="editor-field rule-description k-textbox" data-rule-name="rule1" placeholder="Descrizione" data-bind="value: ruleDescription"/>
+                    Tripletta associata: <div class="flow-association" data-rule-name="rule1" data-role="dropdownlist" data-option-label="Seleziona tripletta" data-option-label-template="optionLabelTemplate" data-value-template="flowAssociationTemplate" data-template="flowAssociationTemplate" data-text-field="name" data-value-field="value" data-bind="value: associatedFlow, source: flowIdentificators"></div>
+                </div>
+                <a href="#" class="k-primary configurator-add-rulegroup" data-rule-name="rule1" data-last-editor-id="1" data-role="button" data-icon="add" data-bind="click: addRuleGroup">Aggiungi gruppo</a>
+                <a href="#" class="k-primary configurator-save-rule" data-rule-name="rule1" data-bind="enabled: canSave('rule')">Salva regola</a>
+                <input type="hidden" class="rule-json" data-rule-name="rule1" />
+                
+                <div>
+                    Definizione Regola:<span class="rule-definition" data-rule-name="rule1" data-bind="attr: { id: ruleDefId }"></span>
+                </div>
             </div>
-            
-            <div class="editor-rule-group" id="editor-1"  data-rule-name="rule-1">
-                <p class="editor-field rule-group-name" data-editor="editor-1">Gruppo 1</p>
-                <input class="editor-rule" type="hidden" data-editor="editor-1"/>
-                <div class="editor-field">
-                    <div class="logicOperatorDropdownlist" data-editor="editor-1"></div> condizione.
-                </div>
-                <div class="editor-field">
-                    <div class="fieldSelectionDropdownlist" data-editor="editor-1"></div> è valorizzato.
-                    <span class="k-icon k-i-plus editor-plus-sign" data-editor="editor-1" title="Aggiungi campo obbligatorio"></span>
-                </div>
-                <div class="editor-field">
-                    <a href="#" class="k-primary editor-save-button" data-rule-name="rule-1" data-editor="editor-1">Salva</a>
+            <div class="k-editor-content">
+                <div class="editor-rule-group" id="editor-1"  data-rule-name="rule1">
+                    <p class="editor-field rule-group-name" data-editor="editor-1">Gruppo 1</p>
+                    <div class="editor-field" data-bind="visible: fieldNames.length > 1">
+                        <div class="logicOperatorDropdownlist" data-editor="editor-1" data-role="dropdownlist" data-option-label="Seleziona opzione" data-text-field="name" data-value-field="value" data-value-primitive="true" data-bind="value: operator, source: operatorDataSource"></div> condizione.
+                    </div>
+                    <div class="editor-field">
+                        <div class="fieldSelectionDropdownlist" data-editor="editor-1" data-role="dropdownlist" data-option-label="Seleziona opzione" data-text-field="name" data-value-field="value" data-value-primitive="true" data-bind="value: field1, source: fieldDataSource"></div> è valorizzato.
+                        <span class="k-icon k-i-add editor-plus-sign" data-editor="editor-1" title="Aggiungi campo obbligatorio" data-bind="click: addField"></span>
+                    </div>
+                    <div class="editor-field">
+                        <a href="#" class="k-primary editor-save-button" data-rule-name="rule1" data-editor="editor-1" data-role="button" data-bind="enabled: canSave('fieldGroup'), click:saveFieldGroup">Salva</a>
+                    </div>
                 </div>
             </div>
         </div>
-       
     </form>
 </body>
 </html>

@@ -17,14 +17,14 @@
     cursor: pointer;
 }
 
-.ruleOperatorDropDownlist.or {
-    width: 100px;
+
+.narrow {
+    width: 60px;
 }
 
-.ruleOperatorDropDownlist.and {
-    width: 55px;
+.wide {
+    width:100px !important
 }
-
 
 .no-display {
     display: none;

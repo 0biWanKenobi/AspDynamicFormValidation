@@ -31,17 +31,31 @@ namespace WebSite.Business
             }
         }
 
-        public static void SaveValidationConfig(int flowId, string ruleName, string jsonRuleDefinition, string ruleDescription)
+        public static void SaveValidationConfig(int flowId, string ruleName, string jsonRuleDefinition, string ruleDescription, params bool[] usedFields)
         {
             using(var dbConnection = new OleDbConnection(ConnectionString))
             using (var dataContext = new ConfigurationContext(dbConnection))
             {
                 dbConnection.Open();
+                
+
+                var ruleFieldSet = new DaoModels.RuleFields
+                {
+                    Field1Enabled = usedFields[0],
+                    Field2Enabled = usedFields[1],
+                    Field3Enabled = usedFields[2],
+                    Field4Enabled = usedFields[3],
+                    Field5Enabled = usedFields[4],
+                };
+
+                dataContext.RuleFields.InsertOnSubmit(ruleFieldSet);
+
                 dataContext.Rules.InsertOnSubmit(new DaoModels.Rule
                 {
                     Name = ruleName,
                     Definition = jsonRuleDefinition,
-                    Description = ruleDescription
+                    Description = ruleDescription,
+                    RuleFields = ruleFieldSet.Id
                 });
             }
         }

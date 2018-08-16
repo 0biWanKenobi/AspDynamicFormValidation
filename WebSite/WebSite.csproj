@@ -123,6 +123,7 @@
       <DependentUpon>jsLiveBuilder.ascx</DependentUpon>
     </Compile>
     <Compile Include="Models\Configuration.cs" />
+    <Compile Include="Models\DAO\RuleFields.cs" />
     <Compile Include="Models\DTO\Rule.cs" />
     <Compile Include="Models\JsonConfiguration.cs" />
     <Compile Include="Models\DAO\Rule.cs" />

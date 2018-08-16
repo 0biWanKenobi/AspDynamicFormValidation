@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Web.Script.Services;
@@ -9,12 +10,14 @@ using Newtonsoft.Json.Linq;
 using WebSite.Business;
 using WebSite.Models;
 using WebSite.Models.DAO;
+using System.Text.RegularExpressions;
 
 namespace WebSite
 {
     public partial class ValidatorConfiguration : System.Web.UI.Page
     {
         public List<Rule> Rules;
+        private static readonly Regex ClearRuleJson = new Regex(@"\r\n|\s+");
         protected void Page_Load(object sender, EventArgs e)
         {
 
@@ -24,16 +27,17 @@ namespace WebSite
         public static HttpResponseMessage SaveConfiguration(string configuration)
         {
             dynamic config = JsonConvert.DeserializeObject(configuration);
-            foreach (JProperty rule in config)
+            var ruleNameList = ((JArray)config.ruleNames).ToObject<List<string>>();
+            foreach (var ruleName in ruleNameList)
             {
-                var ruleDefinition = rule.Value.ToString();
-                var associatedFlow = (int)rule.Value["flowId"];
-                var ruleName = rule.Name;
+
+                var rule = (JObject)config[ruleName];
+                
                 DataLayer.SaveValidationConfig(
-                    flowId:             (int)rule.Value["flowId"],
-                    ruleName:            rule.Name,
-                    jsonRuleDefinition: rule.Value.ToString(),
-                    ruleDescription:     (string)rule.Value["description"]
+                    flowId:             rule.Value<int>("flowId"),
+                    ruleName:           ruleName,
+                    jsonRuleDefinition: ClearRuleJson.Replace(rule.ToString(), ""),
+                    ruleDescription:     rule.Value<string>("description").Trim()
                 );
 
             }

@@ -2,6 +2,7 @@
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
 using WebSite.Models;
+using WebSite.Models.DAO;
 using Rule = WebSite.Models.DAO.Rule;
 
 namespace WebSite.Business
@@ -11,6 +12,7 @@ namespace WebSite.Business
 
         public Table<Configuration> Configurations;
         public Table<Rule> Rules;
+        public Table<RuleFields> RuleFields;
 
         public ConfigurationContext(string fileOrServerOrConnection) : base(fileOrServerOrConnection)
         {

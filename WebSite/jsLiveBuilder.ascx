@@ -4,7 +4,7 @@
 	(function () {
 
 
-		var configuration = JSON.parse(<%%>);
+		var configuration = JSON.parse(<%=JsonConfiguration%>);
 
 
 		var getRuleString = function () {
