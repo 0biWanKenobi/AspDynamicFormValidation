@@ -34,6 +34,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,6 +44,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
@@ -122,8 +124,12 @@
     <Compile Include="jsLiveBuilder.ascx.designer.cs">
       <DependentUpon>jsLiveBuilder.ascx</DependentUpon>
     </Compile>
-    <Compile Include="Models\Configuration.cs" />
-    <Compile Include="Models\DAO\RuleFields.cs" />
+    <Compile Include="Models\DAO\Configuration.cs" />
+    <Compile Include="Models\DAO\FieldGroup.cs" />
+    <Compile Include="Models\DAO\FieldGroupField.cs" />
+    <Compile Include="Models\DAO\Formula.cs" />
+    <Compile Include="Models\DTO\FieldGroup.cs" />
+    <Compile Include="Models\DTO\Formula.cs" />
     <Compile Include="Models\DTO\Rule.cs" />
     <Compile Include="Models\JsonConfiguration.cs" />
     <Compile Include="Models\DAO\Rule.cs" />

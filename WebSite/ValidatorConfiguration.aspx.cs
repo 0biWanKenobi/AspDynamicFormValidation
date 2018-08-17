@@ -8,9 +8,9 @@ using System.Web.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WebSite.Business;
-using WebSite.Models;
-using WebSite.Models.DAO;
 using System.Text.RegularExpressions;
+using WebSite.Models.DTO;
+
 
 namespace WebSite
 {
@@ -28,19 +28,24 @@ namespace WebSite
         {
             dynamic config = JsonConvert.DeserializeObject(configuration);
             var ruleNameList = ((JArray)config.ruleNames).ToObject<List<string>>();
-            foreach (var ruleName in ruleNameList)
+            var ruleList = ruleNameList.Select(ruleName =>
             {
-
                 var rule = (JObject)config[ruleName];
-                
-                DataLayer.SaveValidationConfig(
-                    flowId:             rule.Value<int>("flowId"),
-                    ruleName:           ruleName,
-                    jsonRuleDefinition: ClearRuleJson.Replace(rule.ToString(), ""),
-                    ruleDescription:     rule.Value<string>("description").Trim()
-                );
+                var fieldGroups = rule["rulegroups"].ToObject<string[]>().Select( name =>
+                {
+                    var fieldGroup = rule[name].ToObject<FieldGroup>();
+                    fieldGroup.Name = name;
+                    return fieldGroup;
+                });
 
-            }
+                var dtoRule = rule.ToObject<Rule>();
+                dtoRule.RuleFieldDefinitions = fieldGroups.ToList();
+                return dtoRule;
+            });
+
+            //TO-DO call method must be UpdateValidationConfig when updating
+            // and SaveValidationConfig when creating from scratch
+            DataLayer.UpdateValidationConfig(1, ruleList);
 
             return new HttpResponseMessage()
             {

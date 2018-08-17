@@ -11,8 +11,10 @@ namespace WebSite.Business
     {
 
         public Table<Configuration> Configurations;
+        public Table<Formula> Formulas;
         public Table<Rule> Rules;
-        public Table<RuleFields> RuleFields;
+        public Table<FieldGroup> FieldGroups;
+        public Table<FieldGroupField> FieldGroupFields;
 
         public ConfigurationContext(string fileOrServerOrConnection) : base(fileOrServerOrConnection)
         {

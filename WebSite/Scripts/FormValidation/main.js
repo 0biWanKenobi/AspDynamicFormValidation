@@ -14,11 +14,11 @@
     var fieldTemplate;
 
     var fieldNameValues = [
-        { name: "Field 1", value: "field1" },
-        { name: "Field 2", value: "field2" },
-        { name: "Field 3", value: "field3" },
-        { name: "Field 4", value: "field4" },
-        { name: "Field 5", value: "field5" }
+        { name: "Field 1", value: 1 },
+        { name: "Field 2", value: 2 },
+        { name: "Field 3", value: 3 },
+        { name: "Field 4", value: 4 },
+        { name: "Field 5", value: 5 }
     ];
 
     var logicalRuleOperators = [
@@ -230,6 +230,9 @@
         var rule = configurationViewModels.rules[ruleName];
         
         configuration[ruleName] = {
+            name: ruleName,
+            operator: "&", //TO-DO assign from formula configuration
+            formula: "Formula 01", //TO-DO assign from formula configuration
             rulegroups: new Array(),
             description: rule.ruleViewModel.ruleDescription,
             flowId: rule.ruleViewModel.associatedFlow.value
@@ -241,10 +244,11 @@
 
             configuration[ruleName][editorElementId] = {
                 fieldNames: fieldGroupViewModel.fieldNames,
+                operator: fieldGroupViewModel.operator,
                 prevRuleGroupRelationship: fieldGroupViewModel.prevRuleGroupRelationship
             };
-            fieldGroupViewModel.fieldNames.forEach(function(f) {
-                configuration[ruleName][editorElementId][f] = fieldGroupViewModel[f];
+            fieldGroupViewModel.fieldNames.forEach(function(field) {
+                configuration[ruleName][editorElementId][field] = fieldGroupViewModel[field];
             });
         });        
        

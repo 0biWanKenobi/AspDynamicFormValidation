@@ -1,6 +1,6 @@
 ﻿using System.Data.Linq.Mapping;
 
-namespace WebSite.Models
+namespace WebSite.Models.DAO
 {
     [Table(Name = "vconfig_validation")]
     public class Configuration

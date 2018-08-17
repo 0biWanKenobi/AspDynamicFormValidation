@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Linq;
 using System.Data.OleDb;
 using System.Linq;
 using DtoModels = WebSite.Models.DTO;
@@ -21,45 +21,64 @@ namespace WebSite.Business
 
                     new DtoModels.Rule
                     {
-                          Id = c.RuleId
-                        , Definition = TranscodeRule(c.RuleDefinition, c.TcrsField1Used, c.TcrsField2Used, c.TcrsField3Used, c.TcrsField4Used, c.TcrsField5Used)
-                        , RuleFields = GenerateFieldList(c.TcrsField1Used, c.TcrsField2Used, c.TcrsField3Used, c.TcrsField4Used, c.TcrsField5Used)
-                        , Formula = c.ConfigFormulaDefinition
+                       //   Id = c.RuleId
+                       // , Definition = TranscodeRule(c.RuleDefinition, c.TcrsField1Used, c.TcrsField2Used, c.TcrsField3Used, c.TcrsField4Used, c.TcrsField5Used)
+                       // , FieldGroups = GenerateFieldList(c.TcrsField1Used, c.TcrsField2Used, c.TcrsField3Used, c.TcrsField4Used, c.TcrsField5Used)
+                       // , Formula = c.ConfigFormulaDefinition
                     }
                 ).ToList();
 
             }
         }
 
-        public static void SaveValidationConfig(int flowId, string ruleName, string jsonRuleDefinition, string ruleDescription, params bool[] usedFields)
-        {
-            using(var dbConnection = new OleDbConnection(ConnectionString))
-            using (var dataContext = new ConfigurationContext(dbConnection))
+        public static void SaveValidationConfig(int flowId, DtoModels.Formula formula, IEnumerable<DtoModels.Rule> rules){
+            using (var dataContext = new ConfigurationContext(ConnectionString))
             {
-                dbConnection.Open();
-                
-
-                var ruleFieldSet = new DaoModels.RuleFields
+                var dbFormula = new DaoModels.Formula
                 {
-                    Field1Enabled = usedFields[0],
-                    Field2Enabled = usedFields[1],
-                    Field3Enabled = usedFields[2],
-                    Field4Enabled = usedFields[3],
-                    Field5Enabled = usedFields[4],
+                    Name = formula.Name,
+                    Description = formula.Description,
+                    Tipology = flowId
                 };
 
-                dataContext.RuleFields.InsertOnSubmit(ruleFieldSet);
+                dataContext.Formulas.InsertOnSubmit(dbFormula);
 
-                dataContext.Rules.InsertOnSubmit(new DaoModels.Rule
+                int? prevRuleId = null;
+
+                foreach (var rule in rules)
                 {
-                    Name = ruleName,
-                    Definition = jsonRuleDefinition,
-                    Description = ruleDescription,
-                    RuleFields = ruleFieldSet.Id
-                });
+                    prevRuleId = SaveRuleConfiguration(dataContext, rule, dbFormula.Id, prevRuleId);
+                }
             }
         }
 
-        
+        public static void UpdateValidationConfig(int formulaId, IEnumerable<DtoModels.Rule> rules)
+        {
+            using (var dataContext = new ConfigurationContext(ConnectionString))
+            {
+                int? prevRuleId = null;
+                foreach (var rule in rules)
+                {
+                    var dbRule = dataContext.Rules
+                            .FirstOrDefault(r => 
+                                r.Formula == formulaId && r.Name == rule.Name
+                            );
+
+                    if (dbRule == null)
+                    {
+                        prevRuleId = SaveRuleConfiguration(dataContext, rule, formulaId, prevRuleId);
+                        int? prevFieldGroupId = null;
+                        foreach(var fieldGroup in rule.RuleFieldDefinitions)
+                        {
+                            prevFieldGroupId = SaveFieldGroupConfiguration(dataContext, prevRuleId.Value, fieldGroup, prevFieldGroupId);
+                        }
+                    }
+                    else
+                        UpdateRuleConfiguration(dataContext, rule, formulaId, prevRuleId);
+                }
+            }
+        }
+
+
     }
 }
