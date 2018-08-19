@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using Rule = WebSite.Models.DTO.Rule;
 
@@ -7,13 +8,13 @@ namespace WebSite
 {
     public partial class JsLiveBuilder : UserControl
     {
-        public List<Rule> RuleDefinitions = new List<Rule>();
-        public string JsonConfiguration;
+        public string XmlConfiguration;
+        private static readonly Regex ClearRuleJson = new Regex(@"\r\n|[\s]{2,}");
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            JsonConfiguration = "\"{}\"";
-            RuleDefinitions = Business.DataLayer.LoadValidationConfig();
+            var stringXml = Business.DataLayer.LoadValidationConfig(1).ToString();
+            XmlConfiguration  = ClearRuleJson.Replace(stringXml,"").Replace("\"", "\\\"");
         }
     }
 }

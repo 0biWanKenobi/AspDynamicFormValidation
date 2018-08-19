@@ -11,9 +11,6 @@ namespace WebSite.Models.DTO
        
         [JsonProperty(PropertyName = "description")]
         public string Description { get; set; }
-
-        [JsonProperty(PropertyName = "operator")]
-        public string Operator { get; set; }
         
         [JsonProperty(PropertyName = "rulegroups")]
         public List<string> RuleFields { get; set; }

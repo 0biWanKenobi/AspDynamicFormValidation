@@ -231,7 +231,6 @@
         
         configuration[ruleName] = {
             name: ruleName,
-            operator: "&", //TO-DO assign from formula configuration
             formula: "Formula 01", //TO-DO assign from formula configuration
             rulegroups: new Array(),
             description: rule.ruleViewModel.ruleDescription,

@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
-using System.Data.OleDb;
 using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
+using Newtonsoft.Json;
 using DtoModels = WebSite.Models.DTO;
 using DaoModels = WebSite.Models.DAO;
 
@@ -11,24 +12,25 @@ namespace WebSite.Business
     public partial class DataLayer
     {
         private static readonly string ConnectionString = ConfigurationManager.ConnectionStrings["localDB"].ConnectionString;
-        public static List<DtoModels.Rule> LoadValidationConfig()
+        public static XDocument LoadValidationConfig(int flowId)
         {
-            using(var dbConnection = new OleDbConnection(ConnectionString))
-            using(var dataContext = new ConfigurationContext(dbConnection))
+            var xDocument = new XDocument();
+            xDocument.Add(new XElement("Formulas"));
+            using(var dataContext = new ConfigurationContext(ConnectionString))
             {
-                dbConnection.Open();
-                return dataContext.Configurations.Select(c =>
-
-                    new DtoModels.Rule
-                    {
-                       //   Id = c.RuleId
-                       // , Definition = TranscodeRule(c.RuleDefinition, c.TcrsField1Used, c.TcrsField2Used, c.TcrsField3Used, c.TcrsField4Used, c.TcrsField5Used)
-                       // , FieldGroups = GenerateFieldList(c.TcrsField1Used, c.TcrsField2Used, c.TcrsField3Used, c.TcrsField4Used, c.TcrsField5Used)
-                       // , Formula = c.ConfigFormulaDefinition
-                    }
-                ).ToList();
-
+                
+                dataContext.Configurations
+                    .Where ( c => c.IdTipologia == flowId)
+                    .ToList()
+                    .ForEach(
+                        configuration =>
+                        {
+                            xDocument.Element("Formulas")?.Add(configuration.FormulaDefinition);
+                        }
+                    );
             }
+
+            return xDocument;
         }
 
         public static void SaveValidationConfig(int flowId, DtoModels.Formula formula, IEnumerable<DtoModels.Rule> rules){

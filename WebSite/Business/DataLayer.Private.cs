@@ -52,7 +52,6 @@ namespace WebSite.Business
             if (currentRule == null) return;
 
             currentRule.Description = rule.Description;
-            currentRule.Operator = rule.Operator;
             currentRule.PrevRule = prevRule;
 
         }
@@ -93,14 +92,13 @@ namespace WebSite.Business
             throw new System.NotImplementedException();
         }
 
-        private static Models.DAO.Rule MaptoDbRule(Rule rule, int formulaId, int? prevRule)
+        private static DaoModels.Rule MaptoDbRule(Rule rule, int formulaId, int? prevRule)
         {
-            return new Models.DAO.Rule()
+            return new DaoModels.Rule()
             {
                 Name = rule.Name,
                 Description = rule.Description,
                 Formula = formulaId,
-                Operator = rule.Operator,
                 PrevRule = prevRule
             };
         }

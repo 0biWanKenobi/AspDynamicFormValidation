@@ -8,7 +8,6 @@ using System.Web.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WebSite.Business;
-using System.Text.RegularExpressions;
 using WebSite.Models.DTO;
 
 
@@ -17,7 +16,6 @@ namespace WebSite
     public partial class ValidatorConfiguration : System.Web.UI.Page
     {
         public List<Rule> Rules;
-        private static readonly Regex ClearRuleJson = new Regex(@"\r\n|\s+");
         protected void Page_Load(object sender, EventArgs e)
         {
 

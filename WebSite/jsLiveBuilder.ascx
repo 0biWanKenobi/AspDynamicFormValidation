@@ -1,110 +1,148 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="jsLiveBuilder.ascx.cs" Inherits="WebSite.JsLiveBuilder" %>
-<script type="text/javascript">
+<script type = "text/javascript">
 
-	(function () {
-
-
-		var configuration = JSON.parse(<%=JsonConfiguration%>);
+    (function() {
 
 
-		var getRuleString = function () {
-			var ruleString = "";
+        var xmlConfiguration = $.parseXML("<%= XmlConfiguration %>");
+
+        var validationResults = {
+            results: new Array()
+        };
+
+        var isFilled = function(input) {
+            var element = $('#' + input);
+            if (!element.length) return false;
+            return $('#' + input).val().length > 0;
+        };
+
+        var getColor = function(result) {
+            return result ? 'black' : 'red';
+        };
+
+        var colorizeLabel = function(label, result) {
+            $(label).css('color', getColor(result));
+        };
+
+        var isEachFieldValid = function(fieldGroup) {
+            var isValid = true;
+            $("Fields Field", fieldGroup).each(function(i, field) {
+                var fieldName = "field" + $(field).attr("Id");
+                var checkResult = isFilled(fieldName);
+                isValid = isValid && checkResult;
+                validationResults.results.push({ element: fieldName, valid: checkResult });
+            });
+            return isValid;
+        };
+
+        var isAnyFieldValid = function(fieldGroup) {
+            var isValid = false;
+            $("Fields Field", fieldGroup).each(function(i, field) {
+                var fieldName = "field" + $(field).attr("Id");
+                var checkResult = isFilled(fieldName);
+                isValid = isValid || checkResult;
+                validationResults.results.push({ element: fieldName, valid: checkResult });
+            });
+            return isValid;
+        };
+
+        var isAnd = function(operator) {
+            return operator === "&amp;";
+        };
+
+        var isOr = function(operator) {
+            return operator === "|";
+        }
 
 
-		    $(configuration.ruleNames.each(function(i, ruleName) {
-		        $(configuration[ruleName].rulegroups).each(function(i, rg){
-		            var ruleGroupString = "";
-		            $(configuration[1][rg].fields).each(function(i, fl){
-		                ruleGroupString += fl + "()" + configuration[1][rg].operator;
-		            });
-		            ruleGroupString = "(" +ruleGroupString.slice(0, -1) +")";
+        var validateForm = function() {
 
-		            if(!!configuration[1][rg].prevRuleGroupRelationship)
-		                ruleString += configuration[1][rg].prevRuleGroupRelationship + ruleGroupString;
-		            else
-		                ruleString =  ruleGroupString + ruleString;
-		        });
-		    }));
+            var isFormulaValid = true;
+            $("Formula", xmlConfiguration).each(function(i, formula) {
 
-			
+                var rules = $("Rule", formula);
 
-			return ruleString;
-		}
+                isFormulaValid = null;
 
+                rules.each(function(j, rule) {
+                    
+                    var isRuleValid = null; 
+                    var fieldGroups = $("FieldGroups FieldGroup", rule);
 
-		var isFilled = function (input) {
-			var element = $('#' + input);
-			if (!element.length) return false;
-			return $('#'+input).val().length > 0;
-		}
-  
-		var getColor = function (result){
-			return result ? 'black' : 'red';
-		}
-	
-		var colorizeLabel = function (label, result){
-			$(label).css('color', getColor(result));
-		}
+                    var prevRuleOperator = $("PrevRuleOperator", rule);
 
+                    fieldGroups.each(function(i, fieldGroup) {
+                        var groupOperator = $("Operator", fieldGroup).html();
+                        var prevGroupOperator = $("PrevGroupOperator", fieldGroup).html();
+                        var isGroupValid = isAnd(groupOperator)
+                            ? isEachFieldValid(fieldGroup)
+                            : isAnyFieldValid(fieldGroup);
 
-		<%  
-			foreach (var r in RuleDefinitions)
-			{ %>
-		var rule<%=r.Id%> = function() {
-			var valResult =  <%= r.Definition     %>;
-			validationResults.results.push(
-				{
-					result: valResult,
-					elements: [<%= r.RuleFields%>]
-				});
-			return valResult;   
-		};
-		<%  } %>
+                        if (isRuleValid === null) {
+                            isRuleValid = isGroupValid;
+                            return;
+                        }
+
+                        if (isAnd(prevGroupOperator))
+                            isRuleValid = isRuleValid && isGroupValid;
+                        else if (isOr(prevGroupOperator))
+                            isRuleValid = isRuleValid || isGroupValid;
+                    });
+
+                    if (isFormulaValid === null) {
+                        isFormulaValid = isRuleValid;
+                        return;
+                    }
+
+                    isAnd(prevRuleOperator)
+                        ? isFormulaValid = isRuleValid && isFormulaValid
+                        : isFormulaValid = isRuleValid || isFormulaValid;
+                });
+            });
+            return isFormulaValid;
+        };
 
 
-		var validationFormula = function() {
-			return <%= RuleDefinitions?.FirstOrDefault()?.Formula %>;
-		}
+        
 
-		var validationResults = {
-			results: new Array()
-		};
-  
-	
-		var runValidation = function(){
-			console.log('Initiating validation..');
-			var validationSuccess = validationFormula();
-			if(validationSuccess)
-				console.log('validation success!');
-			else	
-				console.log('validation failed!');
-	
-			for(var resultIndex in validationResults.results) {
-				if (validationResults.results.hasOwnProperty(resultIndex)) {
-					var result = (validationResults.results[resultIndex]);
-					for (var elIndex in result.elements)
-						if (result.elements.hasOwnProperty(elIndex))
-							colorizeLabel('label[for=' + result.elements[elIndex] + ']', validationSuccess);
-				}
-			}
 
-		}
-	
-		$(function(){
-	
-			runValidation();
-			$('#register').on(
-				'click', 
-				function(e){
-					e.preventDefault();
-					if (validationResults && validationResults.results.length)
-						validationResults.results = new Array();
-					runValidation();
-				});
-	
-		});
-	
-	})();
+        var runValidation = function() {
+            console.log('Initiating validation..');
+            var validationSuccess = validateForm();
+            if (validationSuccess) {
+                console.log('validation success!');
+                $(validationResults.results).each(function(i, field) {
+                    colorizeLabel('label[for=' + field.element + ']', true);
+                });
+                return;
+            }
+            else
+                console.log('validation failed!');
 
-	
-	</script>
+
+            $(validationResults.results).each(function(i, field) {
+                colorizeLabel('label[for=' + field.element + ']', field.valid);
+            });
+
+            
+
+        };
+
+        $(function() {
+            runValidation();
+            validateForm();
+            $('#register').on(
+                'click',
+                function(e) {
+                    e.preventDefault();
+                    if (validationResults && validationResults.results.length)
+                        validationResults.results = new Array();
+                    runValidation();
+                });
+
+        });
+
+    })();
+
+
+</script>

@@ -17,9 +17,6 @@ namespace WebSite.Models.DAO
         [Column(Name = "tr_formula")]
         public int Formula { get; set; }
 
-        [Column(Name = "tr_operator")]
-        public string Operator { get; set; }
-
         [Column(Name = "tr_prevRule")]
         public int? PrevRule { get; set; }
 
