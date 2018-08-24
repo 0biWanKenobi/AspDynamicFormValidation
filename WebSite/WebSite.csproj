@@ -86,10 +86,11 @@
     <Content Include="Global.asax" />
     <Content Include="Index.aspx" />
     <Content Include="jsLiveBuilder.ascx" />
+    <Content Include="Scripts\FormValidation\configurationLoading.js" />
     <Content Include="Styles\Kendo\fonts\glyphs\KendoUIGlyphs.ttf" />
     <Content Include="Styles\Kendo\fonts\glyphs\WebComponentsIcons.ttf" />
     <None Include="Scripts\Libraries\jQuery\jquery-3.3.1.intellisense.js" />
-    <Content Include="Scripts\FormValidation\main.js" />
+    <Content Include="Scripts\FormValidation\configurationBuilding.js" />
     <Content Include="Scripts\Kendo\kendo.all.min.js" />
     <Content Include="Scripts\Libraries\jQuery\jquery-3.3.1.js" />
     <Content Include="Scripts\Libraries\jQuery\jquery-3.3.1.min.js" />
@@ -129,9 +130,12 @@
     <Compile Include="Models\DAO\FieldGroup.cs" />
     <Compile Include="Models\DAO\FieldGroupField.cs" />
     <Compile Include="Models\DAO\Formula.cs" />
+    <Compile Include="Models\DAO\TipologyFormula.cs" />
+    <Compile Include="Models\DAO\Tipology.cs" />
     <Compile Include="Models\DTO\FieldGroup.cs" />
     <Compile Include="Models\DTO\Formula.cs" />
     <Compile Include="Models\DTO\Rule.cs" />
+    <Compile Include="Models\DTO\Tipology.cs" />
     <Compile Include="Models\JsonConfiguration.cs" />
     <Compile Include="Models\DAO\Rule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -141,6 +145,9 @@
     </Compile>
     <Compile Include="ValidatorConfiguration.aspx.designer.cs">
       <DependentUpon>ValidatorConfiguration.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ValidatorConfiguration.aspx.private.cs">
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="ValidatorConfigurationTemplate.ascx.cs">
       <DependentUpon>ValidatorConfigurationTemplate.ascx</DependentUpon>

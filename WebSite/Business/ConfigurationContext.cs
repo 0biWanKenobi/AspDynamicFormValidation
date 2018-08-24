@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
-using WebSite.Models;
 using WebSite.Models.DAO;
 using Rule = WebSite.Models.DAO.Rule;
 
@@ -15,6 +14,8 @@ namespace WebSite.Business
         public Table<Rule> Rules;
         public Table<FieldGroup> FieldGroups;
         public Table<FieldGroupField> FieldGroupFields;
+        public Table<Tipology> Tipologies;
+        public Table<TipologyFormula> TipologiesFormulas;
 
         public ConfigurationContext(string fileOrServerOrConnection) : base(fileOrServerOrConnection)
         {

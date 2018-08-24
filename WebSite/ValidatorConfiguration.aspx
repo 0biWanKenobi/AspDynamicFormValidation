@@ -1,6 +1,6 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ValidatorConfiguration.aspx.cs" Inherits="WebSite.ValidatorConfiguration" %>
 <%@ Import Namespace="System.Web.Optimization" %>
-<%@ Register src="~/ValidatorConfigurationTemplate.ascx" tagPrefix="kendo" tagName="editorTemplate" %>
+<%@ Register src="~/ValidatorConfigurationTemplate.ascx" tagPrefix="kendo" tagName="editorTemplates" %>
 
 <!DOCTYPE html>
 
@@ -14,42 +14,27 @@
         <%: Scripts.Render("~/bundle/kendoJs")%>
     </asp:PlaceHolder>
     <link href="~/Styles/validationConfigurator.css" rel="stylesheet"/>
-    <script src="<%: ResolveUrl("~/Scripts/FormValidation/main.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/FormValidation/configurationBuilding.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/FormValidation/configurationLoading.js") %>"></script>
 
 </head>
 <body>
-    <kendo:editorTemplate runat="server"/>
+    <kendo:editorTemplates runat="server"/>
+    
+    <form id="configurationLoaderForm">
+        <div id="configurator-macrotype" class="margin-10" data-role="dropdownlist" data-option-label="Seleziona macrotipo"   data-text-field="name" data-value-field="valueM" data-bind="value: tipology.chosenMacrotype, source: availableTipologies.macrotypeCollection"></div>
+        <div id="configurator-type-one"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona tipologia 1" data-text-field="name" data-value-field="valueT1" data-bind="value: tipology.chosenTypeOne,   source: availableTipologies.typeoneCollection" data-cascade-from="configurator-macrotype"></div>
+        <div id="configurator-type-two"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona tipologia 2" data-text-field="name" data-value-field="valueT2" data-bind="value: tipology.chosenTypeTwo,   source: availableTipologies.typetwoCollection" data-cascade-from="configurator-type-one"></div>
+        <span data-bind="attr: {title: saveButtonTitle}">
+            <a href="#" data-role="button" data-icon="preview" class="k-primary configuration-load-button" data-bind="enabled:canLoad, click: loadConfiguration">Visualizza Formula</a>
+        </span>
+
+        <a href="#" data-role="button" data-icon="add" class="configuration-new-button" data-bind="invisible: isConfigurationLoaded, click: newFormula">Nuova Formula</a>
+    </form>
+
     <form id="configuratorForm">
-        <div id="rule1" class="k-editor">
-            <div class="k-editor-header">
-                <div>
-                    Regola 1<input type="text" class="editor-field rule-description k-textbox" data-rule-name="rule1" placeholder="Descrizione" data-bind="value: ruleDescription"/>
-                    Tripletta associata: <div class="flow-association" data-rule-name="rule1" data-role="dropdownlist" data-option-label="Seleziona tripletta" data-option-label-template="optionLabelTemplate" data-value-template="flowAssociationTemplate" data-template="flowAssociationTemplate" data-text-field="name" data-value-field="value" data-bind="value: associatedFlow, source: flowIdentificators"></div>
-                </div>
-                <a href="#" class="k-primary configurator-add-rulegroup" data-rule-name="rule1" data-last-editor-id="1" data-role="button" data-icon="add" data-bind="click: addRuleGroup">Aggiungi gruppo</a>
-                <a href="#" class="k-primary configurator-save-rule" data-rule-name="rule1" data-bind="enabled: canSave('rule')">Salva regola</a>
-                <input type="hidden" class="rule-json" data-rule-name="rule1" />
-                
-                <div>
-                    Definizione Regola:<span class="rule-definition" data-rule-name="rule1" data-bind="attr: { id: ruleDefId }"></span>
-                </div>
-            </div>
-            <div class="k-editor-content">
-                <div class="editor-rule-group" id="editor-1"  data-rule-name="rule1">
-                    <p class="editor-field rule-group-name" data-editor="editor-1">Gruppo 1</p>
-                    <div class="editor-field" data-bind="visible: fieldNames.length > 1">
-                        <div class="logicOperatorDropdownlist" data-editor="editor-1" data-role="dropdownlist" data-option-label="Seleziona opzione" data-text-field="name" data-value-field="value" data-value-primitive="true" data-bind="value: operator, source: operatorDataSource"></div> condizione.
-                    </div>
-                    <div class="editor-field">
-                        <div class="fieldSelectionDropdownlist" data-editor="editor-1" data-role="dropdownlist" data-option-label="Seleziona opzione" data-text-field="name" data-value-field="value" data-value-primitive="true" data-bind="value: field1, source: fieldDataSource"></div> è valorizzato.
-                        <span class="k-icon k-i-add editor-plus-sign" data-editor="editor-1" title="Aggiungi campo obbligatorio" data-bind="click: addField"></span>
-                    </div>
-                    <div class="editor-field">
-                        <a href="#" class="k-primary editor-save-button" data-rule-name="rule1" data-editor="editor-1" data-role="button" data-bind="enabled: canSave('fieldGroup'), click:saveFieldGroup">Salva</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div id="formula-container"></div>
+        <div id="formula-rules"></div>
     </form>
 </body>
 </html>

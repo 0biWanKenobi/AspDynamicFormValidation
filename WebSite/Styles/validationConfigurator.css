@@ -1,16 +1,41 @@
-﻿.k-editor, .k-editor-child {
-    padding: 10px;
-    margin: 10px;
+﻿html, body {
+    height: 100%;
+    margin: 0
 }
 
-.k-editor {
+#formula-rules > div {
+    position: relative;
+}
+
+#formula-rules > .minimized {
+    height: 50px;
+    overflow: hidden;
+}
+
+.minimize-button {
+    padding: 4px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+
+.rounded-border {
     border: 1px solid lightgray;
     -ms-border-radius: 5px;
     border-radius: 5px;
 }
 
-.editor-field {
+.padding-10 {
+    padding: 10px;
+}
+
+.margin-10 {
     margin: 10px;
+}
+
+.margin-topbottom-10 {
+    margin: 10px 0;
 }
 
 .editor-plus-sign {

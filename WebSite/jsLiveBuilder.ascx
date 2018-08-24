@@ -52,7 +52,7 @@
 
         var isOr = function(operator) {
             return operator === "|";
-        }
+        };
 
 
         var validateForm = function() {

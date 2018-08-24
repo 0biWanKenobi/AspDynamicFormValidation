@@ -9,8 +9,8 @@ namespace WebSite.Models.DAO
         [Column(Name = "Id")]
         public int IdFormula {get; set;}
 
-        [Column(Name = "IdTipologia")]
-        public int IdTipologia {get; set;}
+        [Column(Name = "Tipologies")]
+        public XElement Tipologie {get; set;}
 
         [Column(Name = "Definition")]
         public XElement FormulaDefinition {get; set;}
