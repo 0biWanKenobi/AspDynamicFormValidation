@@ -65,10 +65,12 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\tconfig_formulas.sql" />
-    <Build Include="dbo\Tables\tconfig_formula_rules.sql" />
-    <Build Include="dbo\Tables\tconfig_rulefields.sql" />
     <Build Include="dbo\Tables\ttipologie.sql" />
     <Build Include="dbo\Tables\tconfig_rules.sql" />
-    <Build Include="dbo\Views\vconfig_validation.sql" />
+    <Build Include="dbo\Tables\tconfig_tipologies_formulas.sql" />
+    <Build Include="dbo\Tables\tconfig_fields.sql" />
+    <Build Include="dbo\Tables\tconfig_fieldgroup_fields.sql" />
+    <Build Include="dbo\Tables\tconfig_fieldgroup.sql" />
+    <Build Include="dbo\Views\vconfig_formula_definitions.sql" />
   </ItemGroup>
 </Project>

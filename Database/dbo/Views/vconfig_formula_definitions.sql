@@ -1,11 +1,52 @@
-﻿CREATE VIEW dbo.vconfig_validation
-AS
-SELECT        tf.tcf_formula_name AS config_formula, tf.tcf_formula AS config_formula_definition, tr.tcv_codint AS rule_id, tr.tcv_rule AS rule_definition, trf.tcrs_field1_used, trf.tcrs_field2_used, trf.tcrs_field3_used, trf.tcrs_field4_used, 
-                         trf.tcrs_field5_used
-FROM            dbo.tconfig_formulas AS tf INNER JOIN
-                         dbo.tconfig_formula_rules AS tfr ON tf.tcf_codint = tfr.tfr_formula INNER JOIN
-                         dbo.tconfig_rules AS tr ON tfr.tfr_rule = tr.tcv_codint INNER JOIN
-                         dbo.tconfig_rulefields AS trf ON tr.tcv_rulefields_set = trf.tcrs_codint
+﻿
+
+CREATE VIEW [dbo].[vconfig_formula_definitions] 
+AS SELECT
+  tcf_codint AS Id  
+ ,(SELECT (
+		SELECT ttf.ttf_tipology_id AS [@Id],
+				tt_macrotipo_it as [@Macrotype],
+				tt_tipologia1_it as [@TypeOne],
+				tt_tipologia2_it as [@TypeTwo]
+		FROM tconfig_tipologies_formulas ttf 
+		inner join ttipologie on ttf_tipology_id = tt_codint
+		WHERE ttf.ttf_formula_id = tf.tcf_codint
+		FOR XML PATH('Tipology'), TYPE, ELEMENTS
+	  ) FOR XML PATH('Tipologies'), TYPE) as Tipologies
+ ,(SELECT
+      tcf_codint AS [@Id]	  
+     ,tf.tcf_name AS [@Name]
+	 
+     ,tf.tcf_description AS [Description]
+     ,tr.tr_codint AS [Rule/@Id]
+     ,tr.tr_name AS [Rule/@Name]
+     ,tr.tr_description AS [Rule/Description]
+     ,tr.tr_prevrule AS [Rule/PreviousRule]
+     ,[Rule/FieldGroups] = (SELECT
+          tf1.tf_codint AS [@Id]
+         ,tf1.tf_name AS [@Name]
+         ,tf1.tf_prevgroupoperator AS [PrevGroupOperator]
+         ,tf1.tf_operator AS [Operator]
+         ,tf1.tf_prevgroup AS [PrevGroup]
+         ,[Fields] = (SELECT
+              tf2.tf_name AS [@Name]
+             ,tf2.tf_codint AS [@Id]
+            FROM tconfig_fields tf2
+            INNER JOIN tconfig_fieldgroup_fields tff
+              ON tf1.tf_codint = tff.tff_fieldgroup_id
+            WHERE tff.tff_field_id = tf2.tf_codint
+            FOR XML PATH ('Field'), TYPE, ELEMENTS)
+        FROM tconfig_fieldgroup tf1
+        WHERE tr.tr_codint = tf1.tf_rule_id
+        FOR XML PATH ('FieldGroup'), TYPE, ELEMENTS)
+    FOR XML PATH ('Formula'), TYPE)
+  AS Definition
+FROM tconfig_formulas tf
+INNER JOIN tconfig_rules tr
+  ON tf.tcf_codint = tr.tr_formula
+GO
+EXECUTE sp_addextendedproperty @name = N'MS_DiagramPaneCount', @value = 1, @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'VIEW', @level1name = N'vconfig_formula_definitions';
+
 
 GO
 EXECUTE sp_addextendedproperty @name = N'MS_DiagramPane1', @value = N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
@@ -13,7 +54,7 @@ Begin DesignProperties =
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
          NumPanes = 4
-         Configuration = "(H (1[27] 4[34] 2[20] 3) )"
+         Configuration = "(H (1[28] 4[12] 2[42] 3) )"
       End
       Begin PaneConfiguration = 1
          NumPanes = 3
@@ -79,46 +120,6 @@ Begin DesignProperties =
          Left = 0
       End
       Begin Tables = 
-         Begin Table = "tf"
-            Begin Extent = 
-               Top = 6
-               Left = 38
-               Bottom = 136
-               Right = 229
-            End
-            DisplayFlags = 280
-            TopColumn = 0
-         End
-         Begin Table = "trf"
-            Begin Extent = 
-               Top = 6
-               Left = 725
-               Bottom = 136
-               Right = 916
-            End
-            DisplayFlags = 280
-            TopColumn = 0
-         End
-         Begin Table = "tr"
-            Begin Extent = 
-               Top = 6
-               Left = 496
-               Bottom = 136
-               Right = 687
-            End
-            DisplayFlags = 280
-            TopColumn = 0
-         End
-         Begin Table = "tfr"
-            Begin Extent = 
-               Top = 6
-               Left = 267
-               Bottom = 119
-               Right = 458
-            End
-            DisplayFlags = 280
-            TopColumn = 0
-         End
       End
    End
    Begin SQLPane = 
@@ -129,8 +130,8 @@ Begin DesignProperties =
    End
    Begin CriteriaPane = 
       Begin ColumnWidths = 11
-         Column = 2595
-         Alias = 3750
+         Column = 1440
+         Alias = 900
          Table = 1170
          Output = 720
          Append = 1400
@@ -145,9 +146,5 @@ Begin DesignProperties =
       End
    End
 End
-', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'VIEW', @level1name = N'vconfig_validation';
-
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_DiagramPaneCount', @value = 1, @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'VIEW', @level1name = N'vconfig_validation';
+', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'VIEW', @level1name = N'vconfig_formula_definitions';
 

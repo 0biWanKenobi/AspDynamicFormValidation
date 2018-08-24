@@ -1,11 +1,13 @@
 ﻿CREATE TABLE [dbo].[tconfig_rules] (
-    [tcv_codint]           INT           IDENTITY (1, 1) NOT NULL,
-    [tcv_rule]             VARCHAR (500) NOT NULL,
-    [tcv_rulename]         VARCHAR (50)  NOT NULL,
-    [tcv_rulefields_set]   INT           NOT NULL,
-    [tcv_rule_description] VARCHAR (500) NOT NULL,
-    CONSTRAINT [PK_tconfig_validation] PRIMARY KEY CLUSTERED ([tcv_codint] ASC),
-    CONSTRAINT [FK_tconfig_validation_tconfig_rulefields] FOREIGN KEY ([tcv_rulefields_set]) REFERENCES [dbo].[tconfig_rulefields] ([tcrs_codint]),
-    CONSTRAINT [IX_tconfig_validation] UNIQUE NONCLUSTERED ([tcv_codint] ASC)
+    [tr_codint]           INT           IDENTITY (1, 1) NOT NULL,
+    [tr_name]             VARCHAR (100) NOT NULL,
+    [tr_description]      VARCHAR (255) NOT NULL,
+    [tr_formula]          INT           NOT NULL,
+    [tr_prevRule]         INT           NULL,
+    [tr_prevRuleOperator] CHAR (1)      NULL,
+    CONSTRAINT [PK_TCONFIG_RULES] PRIMARY KEY CLUSTERED ([tr_codint] ASC),
+    CONSTRAINT [fk_tconfig_rules_tconfig_formulas] FOREIGN KEY ([tr_formula]) REFERENCES [dbo].[tconfig_formulas] ([tcf_codint]) ON UPDATE CASCADE
 );
+
+
 
