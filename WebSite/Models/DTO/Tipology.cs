@@ -5,13 +5,13 @@ namespace WebSite.Models.DTO
     public class Tipology
     {
         [JsonProperty(PropertyName = "chosenMacroType")]       
-        public TypeTuple MacroType { get; set; }
+        public string MacroType { get; set; }
         
         [JsonProperty(PropertyName = "chosenTypeOne")]  
-        public TypeTuple TypeOne { get; set; }
+        public string TypeOne { get; set; }
         
         [JsonProperty(PropertyName = "chosenTypeTwo")]  
-        public TypeTuple TypeTwo { get; set; }
+        public string TypeTwo { get; set; }
     }
 
     [JsonObject]

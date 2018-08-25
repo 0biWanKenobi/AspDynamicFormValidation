@@ -59,7 +59,7 @@ namespace WebSite
 
             var configuration =
                 DataLayer
-                    .LoadValidationConfig(tipology.MacroType.Name, tipology.TypeOne?.Name, tipology.TypeTwo?.Name)
+                    .LoadValidationConfig(tipology.MacroType, tipology.TypeOne, tipology.TypeTwo)
                     .ToString()
                     .Replace("\"", "\\\"");
             return $"{{\"configuration\":\"{ClearRuleJson.Replace(configuration,"")}\"}}";
@@ -67,10 +67,26 @@ namespace WebSite
         }
 
         [WebMethod, ScriptMethod]
-        public static string LoadFlowList()
+        public static string LoadMacrotypes()
         {
-            var tipologies = DataLayer.LoadFlowList();
+            var macrotypes = DataLayer.LoadMacrotypes();
+            return $"{{\"macrotypes\":{JsonConvert.SerializeObject(macrotypes)} }}";
+        }
+
+        [WebMethod, ScriptMethod]
+        public static string LoadTipologies(TipologyFilter[] filters)
+        {
+            var tipologies = DataLayer.LoadTipologies(filters.FirstOrDefault()?.Value);
             return $"{{\"tipologies\":{JsonConvert.SerializeObject(tipologies)} }}";
+        }
+
+        [WebMethod, ScriptMethod]
+        public static string LoadSubtypes(TipologyFilter[] filters)
+        {
+            var macrotype = filters.FirstOrDefault(f => f.Field ==  "macrotype")?.Value;
+            var tipology = filters.FirstOrDefault(f => f.Field == "tipology")?.Value;
+            var subtypes = DataLayer.LoadSubtypes(macrotype, tipology);
+            return $"{{\"subtypes\":{JsonConvert.SerializeObject(subtypes)} }}";
         }
     }
 }

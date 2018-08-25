@@ -138,17 +138,17 @@
                 rules: ruleViewModels,
                 ruleHasDef: $(rules).length > 0,
                 associatedTipologies: loadFormulaTipologyConfiguration(tipologies),
-                availableTipologies: configurationLoaderViewModel.availableTipologies
+                availableTipologies: {
+                    macrotypeCollection: newMacroTypeDataSource(),
+                    typeoneCollection: newTipologyDataSource(),
+                    typetwoCollection: newSubtypeDataSource(function () {return configurationLoaderViewModel.formula.get("associatedTipologies").chosenMacrotype})
+                }
             }),
             formulaKendoTemplate
         );
         return formulaViewModel;
     };
 
-
-    
-    
-   
 
     /*
      * JSON REQUEST
@@ -177,6 +177,77 @@
 
 
     /*
+     *  TIPOLOGY DROPDOWN INITIALIZERS
+     *
+     */
+
+
+    var newMacroTypeDataSource = function() {
+        return new kendo.data.DataSource({
+            transport: {
+                read: function(e) {
+                    var callBack = function(data) {
+                        console.log("Macrotypes loaded");
+                        return e.success(JSON.parse(data.d).macrotypes);
+                    };
+                    var errorCallBack = function(jXhr, error, errorObj) {
+                        alert("Error of type " + errorObj + "while loading macrotypes");
+                    };
+                    callAjax("LoadMacrotypes", null, callBack, errorCallBack);
+                }
+            }
+        });
+    };
+
+    var newTipologyDataSource = function() {
+        return new kendo.data.DataSource({
+            transport: {
+                read: function(e) {
+                    var callBack = function(data) {
+                        console.log("Tipologies loaded");
+                        return e.success(JSON.parse(data.d).tipologies);
+                    };
+                    var errorCallBack = function(jXhr, error, errorObj) {
+                        alert("Error of type " + errorObj + "while loading tipologies");
+                    };
+                    callAjax("LoadTipologies",
+                        "{filters: " + JSON.stringify(e.data.filter.filters) + "}",
+                        callBack,
+                        errorCallBack);
+                }
+            },
+            serverFiltering: true
+        });
+    };
+
+    var newSubtypeDataSource = function(fetchFilterFn) {
+        return new kendo.data.DataSource({
+            transport: {
+                read: function(e) {
+                    var callBack = function(data) {
+                        console.log("Subtypes loaded");
+                        return e.success(JSON.parse(data.d).subtypes);
+                    };
+                    var errorCallBack = function(jXhr, error, errorObj) {
+                        alert("Error of type " + errorObj + "while loading subtypes");
+                    };
+
+                    e.data.filter.filters.push({ field: "macrotype", operator: "eq", value: fetchFilterFn() });
+                    callAjax("LoadSubtypes",
+                        "{filters: " + JSON.stringify(e.data.filter.filters) + "}",
+                        callBack,
+                        errorCallBack);
+                }
+            },
+            serverFiltering: true
+        });
+    };
+
+    var initializeFlowDropDowns = function() {
+        kendo.bind("#configurationLoaderForm", configurationLoaderViewModel);
+    };
+
+    /*
      *  CONFIGURATION VIEWMODEL CONSTRUCTORS
      *
      */
@@ -195,9 +266,9 @@
 
             availableTipologies: {
                 defaultValue: {
-                    macrotypeCollection: new Array(),
-                    typeoneCollection: new Array(),
-                    typetwoCollection: new Array()
+                    macrotypeCollection: newMacroTypeDataSource(),
+                    typeoneCollection: newTipologyDataSource(),
+                    typetwoCollection: newSubtypeDataSource(function () {return configurationLoaderViewModel.formula.get("associatedTipologies").chosenMacrotype})
                 }
             },
             associatedTipologies: { defaultValue: new Array() },
@@ -246,13 +317,17 @@
         newRule: function() {
             this.set("ruleCount", this.get("ruleCount") + 1);
             var ruleName = "rule" + this.get("ruleCount");
-            FormConfigurator.loadConfigurationRule(
+            var ruleViewModel = FormConfigurator.loadConfigurationRule(
                 null,
                 "",
                 ruleName,
                 this.get("ruleCount"),
                 null
             );
+            this.set("rules." + ruleName, {
+                ruleViewModel: ruleViewModel,
+                fieldGroupViewModels: {}
+            });
             this.ruleDirtyStatuses[ruleName] = false;
             this.set("ruleDirtyStatuses." + ruleName, false);
         },
@@ -265,23 +340,27 @@
         }
     });
 
+    var fetchFilter = function() {
+        return configurationLoaderViewModel.get("tipology").chosenMacrotype.macrotype;
+    };
     
     configurationLoaderViewModel = kendo.observable({
 
         formula: null,
 
         tipology: kendo.observable({
-            chosenMacrotype: null,
-            chosenTypeOne:   null,
-            chosenTypeTwo:   null
+            chosenMacrotype: { macrotype: null },
+            chosenTypeOne: { tipology: null },
+            chosenTypeTwo: { subtype: null }
         }),
-
         availableTipologies: {
-            macrotypeCollection: null,
-            typeoneCollection: null,
-            typetwoCollection: null
-        },                      
-
+            //configurationLoaderViewModel.tipology.chosenMacrotype.macrotype
+            macrotypeDatasource: newMacroTypeDataSource(),
+            tipologyDatasource: newTipologyDataSource(),
+            subtypeDatasource: newSubtypeDataSource(function() {
+                return configurationLoaderViewModel.get("tipology").chosenMacrotype.macrotype;
+            })
+        },    
         isLoaded:false,
         isConfigurationLoaded: function() {
             return this.get("isLoaded");
@@ -290,67 +369,31 @@
             var tipology = this.get("tipology");
             return tipology.get("chosenMacrotype") !== null;
         },
-
-
         saveButtonTitle: function() {
             return this.get("tipology").chosenMacrotype !== null ? "" : "Seleziona almeno il macrotipo";
         },
-
         loadConfiguration: function() {
             var json = "{tipology: " +
                 JSON.stringify({
-                    macroType: this.tipology.chosenMacrotype,
-                    typeOne:   this.tipology.chosenTypeOne,
-                    typeTwo:   this.tipology.chosenTypeTwo
-                }) +
+                    macroType: this.tipology.chosenMacrotype.macrotype,
+                    typeOne:   this.tipology.chosenTypeOne.tipology,
+                    typeTwo:   this.tipology.chosenTypeTwo.subtype 
+                }) +                                            
                 "}";
             requestConfiguration(json);
             this.set("isConfigurationLoaded", true);
         },
-
-        newFormula: function() {
+        newFormula: function () {
+            this.set("formula", new FormulaDataModel());
             formConfigurator.newFormula(this.formula);
         }
     });
 
 
-    /*
-     *  TIPOLOGY DROPDOWN INITIALIZERS
-     *
-     */
+    
 
-    var initializeFlowDropDowns = function(flowList) {
+    
 
-        var macrotypeCollection = new Array();
-        var typeOneCollection =   new Array();
-        var typeTwoCollection =   new Array();
-
-        $(flowList).each(function(i, flow) {
-            macrotypeCollection.push({ "valueM": flow.MacroType,  "name": flow.MacroType });
-            typeOneCollection.push({   "valueT1": flow.TypeOne,   "name": flow.TypeOne, "valueM":  flow.MacroType });
-            typeTwoCollection.push({   "valueT2": flow.TypeTwo,   "name": flow.TypeTwo, "valueT1": flow.TypeOne });
-        });
-
-        configurationLoaderViewModel.set("availableTipologies.macrotypeCollection", macrotypeCollection);
-        configurationLoaderViewModel.set("availableTipologies.typeoneCollection"  , typeOneCollection  );
-        configurationLoaderViewModel.set("availableTipologies.typetwoCollection"  , typeTwoCollection  );
-
-        kendo.bind("#configurationLoaderForm", configurationLoaderViewModel);
-
-        
-    };
-
-    var loadFlowList = function() {
-        //var jsonString = JSON.stringify({ parameters: jsonData });
-        var callBack = function(data) {
-            initializeFlowDropDowns(JSON.parse(data.d).tipologies);
-            console.log("Flows list loaded");
-        };
-        var errorCallBack = function(jXhr, error, errorObj) {
-            alert("Error of type " + errorObj + "while loading flow list");
-        };
-        callAjax("LoadFlowList", null, callBack, errorCallBack);
-    };
 
     /*
      *  DOCUMENT READY HOOK
@@ -358,7 +401,8 @@
      */
 
     $(function() {
-        loadFlowList("{}");
+        initializeFlowDropDowns();
+        //loadFlowList("{}");
     });
 
 })(window, window.FormConfigurator);

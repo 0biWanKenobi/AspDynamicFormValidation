@@ -153,7 +153,7 @@
     formConfigurator.loadFormula = loadFormula;
 
     var newFormula = function(formulaViewModel) {
-        loadFormula(formulaViewModel);
+        loadFormula(formulaViewModel, injectFormulaTemplate());
         
 
     };
@@ -453,7 +453,7 @@
             rule.append(initializedTemplate);
         }
 
-        var fieldGroupViewModel = newFieldGroupViewModel(viewModel, data.ruleId, data.editorId, data.groupClass);
+        var fieldGroupViewModel = newFieldGroupViewModel(viewModel, data.ruleName, data.editorId, data.groupClass);
         kendo.bind(initializedTemplate, fieldGroupViewModel);
         return fieldGroupViewModel;
     };

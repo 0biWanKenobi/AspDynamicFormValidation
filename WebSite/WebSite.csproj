@@ -136,6 +136,7 @@
     <Compile Include="Models\DTO\Formula.cs" />
     <Compile Include="Models\DTO\Rule.cs" />
     <Compile Include="Models\DTO\Tipology.cs" />
+    <Compile Include="Models\DTO\TipologyFilter.cs" />
     <Compile Include="Models\JsonConfiguration.cs" />
     <Compile Include="Models\DAO\Rule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
 using Microsoft.Ajax.Utilities;
-using WebGrease.Css.Extensions;
 using DtoModels = WebSite.Models.DTO;
 using DaoModels = WebSite.Models.DAO;
 
@@ -55,8 +53,8 @@ namespace WebSite.Business
 
                     var queryResult = dataContext.Tipologies
                         .Where(tipology =>
-                            tipology.MacroType == macroType ||
-                            tipology.TypeOne == (typeOne ?? tipology.TypeOne) ||
+                            tipology.MacroType == macroType &&
+                            tipology.TypeOne == (typeOne ?? tipology.TypeOne) &&
                             tipology.TypeTwo == (typeTwo ?? tipology.TypeTwo))
                         .Join(dataContext.TipologiesFormulas,
                             tipology => tipology.Id,
@@ -143,6 +141,54 @@ namespace WebSite.Business
                     else
                         UpdateRuleConfiguration(dataContext, rule, formulaId, prevRuleId);
                 }
+            }
+        }
+
+
+        public static IEnumerable<object> LoadMacrotypes()
+        {
+            using (var dataContext = new ConfigurationContext(ConnectionString))
+            {
+
+
+                return dataContext.Tipologies
+                    .DistinctBy(t => t.MacroType)
+                    .Select(t => new{  macrotype = t.MacroType })
+                    .ToList();
+            }
+        }
+
+        public static IEnumerable<object> LoadTipologies(string macrotype)
+        {
+            if (macrotype.IsNullOrWhiteSpace())
+                return new List<string>();
+            using (var dataContext = new ConfigurationContext(ConnectionString))
+            {
+
+
+                return dataContext.Tipologies
+                    .DistinctBy(t => t.TypeOne)
+                    .Where(t => t.MacroType.Equals(macrotype))
+                    .Select( t => new { tipology = t.TypeOne})
+                    .ToList();
+            }
+        }
+
+        public static IEnumerable<object> LoadSubtypes(string macrotype, string tipologyName)
+        {
+
+            if(macrotype.IsNullOrWhiteSpace() || tipologyName.IsNullOrWhiteSpace())
+                return new List<string>();
+            using (var dataContext = new ConfigurationContext(ConnectionString))
+            {
+                return dataContext.Tipologies
+                    .DistinctBy(t => t.TypeTwo)
+                    .Where(t => 
+                        t.MacroType.Equals(macrotype)
+                        && t.TypeOne.Equals(tipologyName)
+                        )
+                    .Select(t => new { subtype  = t.TypeTwo})
+                    .ToList();
             }
         }
 
