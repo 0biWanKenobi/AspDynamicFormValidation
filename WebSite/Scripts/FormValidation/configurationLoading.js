@@ -261,7 +261,7 @@
             name: { type: "string", defaultValue: "formula1" },
             pristine: { type: "boolean", defaultValue: true },
             saveEnabled: { type: "boolean", defaultValue: false },
-            description: { type: "string" },
+            description: { type: "string", defaultValue: null },
             formulaHasDef: { type: "boolean", defaultValue: false },
 
             availableTipologies: {

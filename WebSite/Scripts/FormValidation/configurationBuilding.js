@@ -412,7 +412,11 @@
             description: rule.ruleViewModel.ruleDescription
         };
 
-        $.each(rule.fieldGroupViewModels, function(i, fieldGroupViewModel) {
+        for(
+            var i = 1, groupName = "editor"+i, fieldGroupViewModel = rule.fieldGroupViewModels.get(groupName);
+            i<=rule.ruleViewModel.groupCount;
+            i++
+        ){
             var editorElementId = "editor-" + fieldGroupViewModel.editorId;
             configuration[ruleName]["rulegroups"].push(editorElementId);
 
@@ -424,7 +428,7 @@
             fieldGroupViewModel.fieldNames.forEach(function(field) {
                 configuration[ruleName][editorElementId][field] = fieldGroupViewModel[field];
             });
-        });        
+        };        
        
         if (configuration.ruleNames.indexOf(ruleName) < 0)
             configuration.ruleNames.push(ruleName);

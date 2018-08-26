@@ -10,7 +10,7 @@
 <script type="kendo/html" id="formulaTemplate">
     <div class="rounded-border margin-10 padding-10 configuration-formula">
         <span>Formula&nbsp;</span>
-        <input type="text" class="formula-description k-textbox" data-bind="value: description"/>
+        <input type="text" class="formula-description k-textbox" placeholder="Descrizione formula" data-bind="value: description"/>
         <a href="\\#" class="k-primary margin-10 configuration-save-button" data-role="button" data-icon="save" data-bind="enabled: saveEnabled, click: saveFormula">Salva Formula</a>
         <a href="\\#" class="margin-10 rule-new-button" data-role="button" data-icon="add" data-bind="click: newRule">Aggiungi Regola</a>
         <div class="formula-tipologies"></div>
