@@ -23,9 +23,9 @@
 
 <script type="kendo/html" id="formulaTipologyTemplate">
     <div class="formula-tipology margin-topbottom-10">
-        <div id="formula-macrotype-#=configurationIndex#" class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Macrotipo"   data-text-field="name" data-value-field="value" data-bind="value: associatedTipologies[#=configurationIndex#].chosenMacrotype, source: availableTipologies.macrotypeCollection"></div>
-        <div id="formula-type-one-#=configurationIndex#"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Tipologia 1" data-text-field="name" data-value-field="value" data-bind="value: associatedTipologies[#=configurationIndex#].chosenTypeOne,   source: availableTipologies.typeoneCollection" data-cascade-from="formula-macrotype-#=configurationIndex#"></div>
-        <div id="formula-type-two-#=configurationIndex#"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Tipologia 2" data-text-field="name" data-value-field="value" data-bind="value: associatedTipologies[#=configurationIndex#].chosenTypeTwo,   source: availableTipologies.typetwoCollection" data-cascade-from="formula-type-one-#=configurationIndex#"></div>
+        <div id="formula-macrotype-#=configurationIndex#" class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Macrotipo"   data-text-field="macrotype" data-value-field="macrotype" data-bind="value: associatedTipologies[#=configurationIndex#].chosenMacrotype, source: availableTipologies.macrotypeCollection"></div>
+        <div id="formula-type-one-#=configurationIndex#"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Tipologia 1" data-text-field="tipology" data-value-field="tipology" data-bind="value: associatedTipologies[#=configurationIndex#].chosenTypeOne,   source: availableTipologies.typeoneCollection" data-cascade-from="formula-macrotype-#=configurationIndex#"></div>
+        <div id="formula-type-two-#=configurationIndex#"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Tipologia 2" data-text-field="subtype" data-value-field="subtype" data-bind="value: associatedTipologies[#=configurationIndex#].chosenTypeTwo,   source: availableTipologies.typetwoCollection" data-cascade-from="formula-type-one-#=configurationIndex#"></div>
         #if(data.showAddTipologyButton) { #
         <span class="k-icon k-i-add editor-plus-sign" title="Aggiungi tripletta" data-bind="click: addTipology"></span>
         # } #

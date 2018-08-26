@@ -1,3 +1,4 @@
+// ReSharper disable All
 intellisense.annotate(jQuery, {
   'ajax': function() {
     /// <signature>

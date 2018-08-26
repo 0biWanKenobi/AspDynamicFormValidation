@@ -90,9 +90,9 @@
         tipologies.each(function(i, tipology) {
             bindFormulaTipology(associatedTipologies.length, associatedTipologies.length === 0);
             associatedTipologies.push({
-                chosenMacrotype: {name:$(tipology).attr("Macrotype"), value:$(tipology).attr("Id")},
-                chosenTypeOne:   {name: $(tipology).attr("TypeOne"),  value:$(tipology).attr("Id")},
-                chosenTypeTwo:   {name:$(tipology).attr("TypeTwo"),   value:$(tipology).attr("Id")}
+                chosenMacrotype: {macrotype:$(tipology).attr("Macrotype")},
+                chosenTypeOne:   {tipology: $(tipology).attr("TypeOne")},
+                chosenTypeTwo:   {subtype:$(tipology).attr("TypeTwo")}
             });
            
         });

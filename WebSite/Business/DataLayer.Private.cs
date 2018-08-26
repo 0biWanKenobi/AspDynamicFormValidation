@@ -20,7 +20,7 @@ namespace WebSite.Business
         private static void UpdateRuleConfiguration(ConfigurationContext dataContext, Rule rule, int formulaId, int? prevRule)
         {
             var currentRule = dataContext.Rules.FirstOrDefault(dbRule =>
-                dbRule.Name == rule.Name && dbRule.Formula == formulaId
+                dbRule.Id == rule.Id
             );
 
             if (currentRule == null) return;

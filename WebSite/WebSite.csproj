@@ -127,11 +127,14 @@
       <DependentUpon>jsLiveBuilder.ascx</DependentUpon>
     </Compile>
     <Compile Include="Models\DAO\Configuration.cs" />
+    <Compile Include="Models\DAO\ConfTipology.cs" />
+    <Compile Include="Models\DAO\ConfTipologyFormula.cs" />
     <Compile Include="Models\DAO\FieldGroup.cs" />
     <Compile Include="Models\DAO\FieldGroupField.cs" />
     <Compile Include="Models\DAO\Formula.cs" />
     <Compile Include="Models\DAO\TipologyFormula.cs" />
     <Compile Include="Models\DAO\Tipology.cs" />
+    <Compile Include="Models\DAO\Validation.cs" />
     <Compile Include="Models\DTO\FieldGroup.cs" />
     <Compile Include="Models\DTO\Formula.cs" />
     <Compile Include="Models\DTO\Rule.cs" />

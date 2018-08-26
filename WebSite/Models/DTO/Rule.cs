@@ -6,6 +6,10 @@ namespace WebSite.Models.DTO
 
     public class Rule
     {
+
+        [JsonProperty(PropertyName = "id")]
+        public int? Id { get; set; }
+
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
        

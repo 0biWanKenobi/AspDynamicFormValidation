@@ -4,11 +4,11 @@ using System.Xml.Linq;
 namespace WebSite.Models.DAO
 {
     /**
-     * This table is used by the configuration utility
-     * It loads tipologies in the same way as the admin saved them
+     * This table is used by the validation script.
+     * It has a row for each tipology actually bound to a formula.
      */
-    [Table(Name = "vconfig_formula_configuration")]
-    public class Configuration
+    [Table(Name = "vconfig_formula_validation")]
+    public class Validation
     {
         [Column(Name = "Id")]
         public int IdFormula {get; set;}

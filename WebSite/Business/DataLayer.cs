@@ -124,12 +124,9 @@ namespace WebSite.Business
                 int? prevRuleId = null;
                 foreach (var rule in rules)
                 {
-                    var dbRule = dataContext.Rules
-                            .FirstOrDefault(r => 
-                                r.Formula == formulaId && r.Name == rule.Name
-                            );
+                    
 
-                    if (dbRule == null)
+                    if (rule.Id == null)
                     {
                         prevRuleId = SaveRuleConfiguration(dataContext, rule, formulaId, prevRuleId);
                         int? prevFieldGroupId = null;
@@ -141,6 +138,8 @@ namespace WebSite.Business
                     else
                         UpdateRuleConfiguration(dataContext, rule, formulaId, prevRuleId);
                 }
+
+
             }
         }
 

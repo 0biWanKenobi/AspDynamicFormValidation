@@ -1,14 +1,9 @@
 ﻿using System.Data.Linq.Mapping;
 
-
 namespace WebSite.Models.DAO
 {
-    /**
-     * Association table between formulas and tipologies.
-     * Used to generate validation xml. 
-     */
-    [Table(Name = "tconfig_tipologies_formulas")]
-    public class TipologyFormula
+    [Table(Name = "tconfig_conftipologies_formulas")]
+    public class ConfTipologyFormula
     {
         [Column(Name = "ttf_formula_id")]
         public int FormulaId { get; set; }
@@ -16,4 +11,5 @@ namespace WebSite.Models.DAO
         [Column(Name = "ttf_tipology_id")]
         public int TipologyId { get; set; }
     }
+    
 }
