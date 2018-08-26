@@ -71,6 +71,9 @@
     <Build Include="dbo\Tables\tconfig_fields.sql" />
     <Build Include="dbo\Tables\tconfig_fieldgroup_fields.sql" />
     <Build Include="dbo\Tables\tconfig_fieldgroup.sql" />
-    <Build Include="dbo\Views\vconfig_formula_definitions.sql" />
+    <Build Include="dbo\Tables\tconfig_tipologie.sql" />
+    <Build Include="dbo\Tables\tconfig_conftipologies_formulas.sql" />
+    <Build Include="dbo\Views\vconfig_formula_validation.sql" />
+    <Build Include="dbo\Views\vconfig_formula_configuration.sql" />
   </ItemGroup>
 </Project>

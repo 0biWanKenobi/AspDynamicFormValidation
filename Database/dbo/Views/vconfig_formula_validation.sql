@@ -1,6 +1,4 @@
-﻿
-
-CREATE VIEW [dbo].[vconfig_formula_definitions] 
+﻿CREATE VIEW dbo.vconfig_formula_validation 
 AS SELECT
   tcf_codint AS Id  
  ,(SELECT (
@@ -45,7 +43,7 @@ FROM tconfig_formulas tf
 INNER JOIN tconfig_rules tr
   ON tf.tcf_codint = tr.tr_formula
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_DiagramPaneCount', @value = 1, @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'VIEW', @level1name = N'vconfig_formula_definitions';
+EXECUTE sp_addextendedproperty @name = N'MS_DiagramPaneCount', @value = 1, @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'VIEW', @level1name = N'vconfig_formula_validation';
 
 
 GO
@@ -146,5 +144,5 @@ Begin DesignProperties =
       End
    End
 End
-', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'VIEW', @level1name = N'vconfig_formula_definitions';
+', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'VIEW', @level1name = N'vconfig_formula_validation';
 
