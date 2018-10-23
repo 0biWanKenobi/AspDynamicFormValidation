@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Transactions;
 using System.Xml.Linq;
+using CCONTACT.Models.DAO;
 using Microsoft.Ajax.Utilities;
-using DtoModels = WebSite.Models.DTO;
-using DaoModels = WebSite.Models.DAO;
+using Formula = CCONTACT.Models.DTO.Formula;
+using Rule = CCONTACT.Models.DTO.Rule;
+using Tipology = CCONTACT.Models.DTO.Tipology;
 
-namespace WebSite.Business
+namespace CCONTACT.Business
 {
     public partial class DataLayer
     {
@@ -45,9 +48,6 @@ namespace WebSite.Business
             xDocument.Add(new XElement("Configuration"));
             using (var dataContext = new ConfigurationContext(ConnectionString))
             {
-
-
-               
                 try
                 {
 
@@ -77,29 +77,14 @@ namespace WebSite.Business
                     Console.WriteLine(e);
                     throw;
                 }
-
-                
-
-              
-
-              //var result =  from configuration in dataContext.Configurations
-              //      join tipology in dataContext.Tipologies
-              //          on  int.Parse(configuration.Tipologie.Attribute("Id").Value) equals
-              //          tipology.Id
-              //        where tipology.MacroType == macroType 
-              //              && tipology.TypeOne == typeOne 
-              //              && tipology.TypeTwo == typeTwo
-              //      select new {configuration.FormulaDefinition};
-
-                
             }
             return xDocument;
         }
 
-        public static void SaveValidationConfig(int flowId, DtoModels.Formula formula, IEnumerable<DtoModels.Rule> rules){
+        public static void SaveValidationConfig(int flowId, Formula formula, IEnumerable<Rule> rules, IEnumerable<Tipology> tipologies){
             using (var dataContext = new ConfigurationContext(ConnectionString))
             {
-                var dbFormula = new DaoModels.Formula
+                var dbFormula = new Models.DAO.Formula
                 {
                     Name = formula.Name,
                     Description = formula.Description,
@@ -114,12 +99,18 @@ namespace WebSite.Business
                 {
                     prevRuleId = SaveRuleConfiguration(dataContext, rule, dbFormula.Id, prevRuleId);
                 }
+
+                foreach (var tipology in tipologies)
+                {
+                    CreateTipologyValidation(dataContext, tipology, dbFormula.Id);
+                }
             }
         }
 
-        public static void UpdateValidationConfig(int formulaId, IEnumerable<DtoModels.Rule> rules, IEnumerable<DtoModels.Tipology> tipologies)
+        public static void UpdateValidationConfig(int formulaId, IEnumerable<Rule> rules, IEnumerable<Tipology> tipologies, IEnumerable<int> removedTipologies)
         {
             using (var dataContext = new ConfigurationContext(ConnectionString))
+            using (var transactionScope = new TransactionScope())
             {
                 int? prevRuleId = null;
                 foreach (var rule in rules)
@@ -136,11 +127,169 @@ namespace WebSite.Business
                         }
                     }
                     else
+                    {
                         UpdateRuleConfiguration(dataContext, rule, formulaId, prevRuleId);
+                        //TO-DO: update fieldgroups configuration
+                        foreach (var fieldGroup in rule.RuleFieldDefinitions)
+                        {
+                            UpdateFieldGroupConfiguration(dataContext, fieldGroup);
+                            DeleteRemovedFields(dataContext, fieldGroup.RemovedFieldIds);
+                        }
+
+                        foreach (var fieldGroupId in rule.RemovedFieldGroupIds)
+                        {
+                            RemoveFieldGroup(dataContext, fieldGroupId);
+                            RemoveFieldGroupFields(dataContext, fieldGroupId);
+                        }
+                       
+                    }
                 }
 
+                // remove all current associations
+                DeleteTipologyValidation(dataContext, formulaId);
+                // ReSharper disable once PossibleMultipleEnumeration
+                foreach (var tipology in tipologies)
+                {
+                    UpdateTipologyConfiguration(dataContext, tipology, formulaId);
+                    // find elements To Be Created
+                    InsertTipologyValidation(dataContext, tipology, formulaId);
+                }
 
+                // ReSharper disable once PossibleMultipleEnumeration
+                DeleteRemovedTipologies(dataContext, removedTipologies, formulaId);
+
+                transactionScope.Complete();
             }
+        }
+
+        private static void DeleteRemovedFields(ConfigurationContext dataContext, List<int> fieldGroupRemovedFieldIds)
+        {
+            var deletedFields = dataContext.FieldGroupFields.Where(f => fieldGroupRemovedFieldIds.Contains(f.Id));
+            dataContext.FieldGroupFields.DeleteAllOnSubmit(deletedFields);
+        }
+
+        private static void RemoveFieldGroupFields(ConfigurationContext dataContext, int fieldGroupId)
+        {
+            var removedFieldGroupFields = dataContext.FieldGroupFields.Where(fgf => fgf.FieldGroupId == fieldGroupId);
+            dataContext.FieldGroupFields.DeleteAllOnSubmit(removedFieldGroupFields);
+        }
+
+        private static void RemoveFieldGroup(ConfigurationContext dataContext, int fieldGroupId)
+        {
+            var removedFieldGroup = dataContext.FieldGroups.First(fg => fg.Id == fieldGroupId);
+            dataContext.FieldGroups.DeleteOnSubmit(removedFieldGroup);
+        }
+
+        private static void UpdateFieldGroupConfiguration(ConfigurationContext dataContext, Models.DTO.FieldGroup fieldGroup)
+        {
+            var dbFieldGroup = dataContext.FieldGroups
+                .FirstOrDefault(fg => fg.Id == fieldGroup.Id);
+
+            if (dbFieldGroup is null) return;
+
+            dbFieldGroup.Name = fieldGroup.Name;
+            dbFieldGroup.Operator = fieldGroup.LogicOperator;
+            dbFieldGroup.PrevGroupId = fieldGroup.PrevFieldGroupId;
+            dbFieldGroup.PrevGroupOperator = fieldGroup.PrevGroupLogicOperator;
+        }
+
+        private static void UpdateFieldGroupFieldsConfiguration(ConfigurationContext dataContext, int fieldGroupId,
+            params int?[] fieldList)
+        {
+            var currentFields = dataContext.FieldGroupFields.Where(fgf =>
+                fgf.FieldGroupId == fieldGroupId);
+            dataContext.FieldGroupFields.DeleteAllOnSubmit(currentFields);
+            SaveFieldGroupFieldsConfiguration(dataContext, fieldGroupId, fieldList);
+        }
+
+
+        private static void DeleteRemovedTipologies(ConfigurationContext dataContext, IEnumerable<int> deletedTipologyIds, int formulaId)
+        {
+            // find elements To Be Deleted
+            var tbd = dataContext.ConfTipologiesFormulas
+                .Where( ctf =>
+                    ctf.FormulaId == formulaId
+                    && deletedTipologyIds.Contains(ctf.TipologyId)
+                )
+                .Join(
+                    dataContext.ConfTipologies,
+                    ctf => ctf.TipologyId,
+                    ct => ct.Id,
+                    (ctf, ct) => new {ctf, ct}
+                )
+                .ToList();
+
+            // ReSharper disable PossibleMultipleEnumeration
+            dataContext.ConfTipologiesFormulas.DeleteAllOnSubmit(tbd.Select(join => join.ctf));
+            dataContext.SubmitChanges();
+            dataContext.ConfTipologies.DeleteAllOnSubmit(tbd.Select(join => join.ct));
+            // ReSharper enable PossibleMultipleEnumeration
+            dataContext.SubmitChanges();
+        }
+
+
+
+        private static void DeleteTipologyValidation(ConfigurationContext dataContext, int formulaId)
+        {
+            var tbd = dataContext.TipologiesFormulas
+                .Where(tf => tf.FormulaId == formulaId);
+
+            dataContext.TipologiesFormulas.DeleteAllOnSubmit(tbd);
+            dataContext.SubmitChanges();
+        }
+
+
+        private static void CreateTipologyValidation(ConfigurationContext dataContext, Tipology tipology, int formulaId)
+        {
+            InsertTipologyValidation(dataContext, tipology, formulaId);
+            dataContext.SubmitChanges();
+        }
+
+        private static void InsertTipologyValidation(ConfigurationContext dataContext, Tipology tipology, int formulaId)
+        {
+            var tbc = dataContext.Tipologies
+                .Where(t => t.MacroType == tipology.MacroType
+                            && (t.TypeOne == tipology.TypeOne || tipology.TypeOne == null)
+                            && (t.TypeTwo == tipology.TypeTwo || tipology.TypeTwo == null)
+                )
+                .ToList()
+                .Select(t => 
+                    new TipologyFormula{ FormulaId = formulaId , TipologyId  = t.Id}
+                );
+
+            dataContext.TipologiesFormulas.InsertAllOnSubmit(tbc);
+            dataContext.SubmitChanges();
+        }
+
+        
+
+
+        private static void UpdateTipologyConfiguration(ConfigurationContext dataContext, Tipology tipology, int formulaId)
+        {
+
+            if(tipology.Id != null)
+            {
+                var dbTipology = dataContext.ConfTipologies.FirstOrDefault(t =>
+                    t.Id == tipology.Id);
+                // ReSharper disable once PossibleNullReferenceException
+                dbTipology.MacroType = tipology.MacroType;
+                dbTipology.TypeOne = tipology.TypeOne;
+                dbTipology.TypeTwo = tipology.TypeTwo;
+            }
+            
+            else
+            {
+                var dbTipology = tipology.MaptoDbConfTipology();
+                dataContext.ConfTipologies.InsertOnSubmit(dbTipology);
+                dataContext.SubmitChanges();
+                dataContext.ConfTipologiesFormulas.InsertOnSubmit(new ConfTipologyFormula
+                {
+                    FormulaId = formulaId,
+                    TipologyId = dbTipology.Id
+                });
+            }
+
+            dataContext.SubmitChanges();
         }
 
 
@@ -152,7 +301,7 @@ namespace WebSite.Business
 
                 return dataContext.Tipologies
                     .DistinctBy(t => t.MacroType)
-                    .Select(t => new{  macrotype = t.MacroType })
+                    .Select(t => new{ value = t.MacroType } )
                     .ToList();
             }
         }
@@ -168,7 +317,7 @@ namespace WebSite.Business
                 return dataContext.Tipologies
                     .DistinctBy(t => t.TypeOne)
                     .Where(t => t.MacroType.Equals(macrotype))
-                    .Select( t => new { tipology = t.TypeOne})
+                    .Select( t => new {value = t.TypeOne})
                     .ToList();
             }
         }
@@ -186,13 +335,13 @@ namespace WebSite.Business
                         t.MacroType.Equals(macrotype)
                         && t.TypeOne.Equals(tipologyName)
                         )
-                    .Select(t => new { subtype  = t.TypeTwo})
+                    .Select(t => new{ value = t.TypeTwo})
                     .ToList();
             }
         }
 
 
-        public static IEnumerable<DaoModels.Tipology> LoadFlowList()
+        public static IEnumerable<Models.DAO.Tipology> LoadFlowList()
         {
             using (var dataContext = new ConfigurationContext(ConnectionString))
             {

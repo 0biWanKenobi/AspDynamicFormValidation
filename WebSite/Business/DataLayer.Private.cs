@@ -1,16 +1,16 @@
 ﻿using System.Linq;
-using DaoModels = WebSite.Models.DAO;
-using DtoModels = WebSite.Models.DTO;
-using Rule = WebSite.Models.DTO.Rule;
+using CCONTACT.Models.DAO;
+using FieldGroup = CCONTACT.Models.DTO.FieldGroup;
+using Rule = CCONTACT.Models.DTO.Rule;
 
-namespace WebSite.Business
+namespace CCONTACT.Business
 {
-    public partial class DataLayer
+    public static partial class DataLayer
     {
        
         private static int SaveRuleConfiguration(ConfigurationContext dataContext, Rule rule, int formulaId, int? prevRule)
         {
-            var dbRule = MaptoDbRule(rule, formulaId, prevRule);
+            var dbRule = rule.MaptoDbRule(formulaId, prevRule);
 
             dataContext.Rules.InsertOnSubmit(dbRule);
             dataContext.SubmitChanges();
@@ -27,12 +27,11 @@ namespace WebSite.Business
 
             currentRule.Description = rule.Description;
             currentRule.PrevRule = prevRule;
-
         }
 
-        private static int SaveFieldGroupConfiguration(ConfigurationContext dataContext, int ruleId, DtoModels.FieldGroup fieldGroup, int? prevGroup)
+        private static int SaveFieldGroupConfiguration(ConfigurationContext dataContext, int ruleId, FieldGroup fieldGroup, int? prevGroup)
         {
-            var dbFieldGroup = MaptoRuleFields(fieldGroup, prevGroup, ruleId);
+            var dbFieldGroup =  fieldGroup.MaptoDbFieldGroup(prevGroup, ruleId);
             dataContext.FieldGroups.InsertOnSubmit(dbFieldGroup);
             dataContext.SubmitChanges();
             SaveFieldGroupFieldsConfiguration(dataContext, dbFieldGroup.Id, fieldGroup.Field1, fieldGroup.Field2, fieldGroup.Field3, fieldGroup.Field4, fieldGroup.Field5);
@@ -43,7 +42,7 @@ namespace WebSite.Business
         {
             foreach (var field in fieldList.Where(f => f.HasValue))
             {
-                dataContext.FieldGroupFields.InsertOnSubmit(new DaoModels.FieldGroupField
+                dataContext.FieldGroupFields.InsertOnSubmit(new FieldGroupField
                 {
                     FieldGroupId = fieldGroupId,
                     FieldId = field.Value
@@ -52,28 +51,36 @@ namespace WebSite.Business
             dataContext.SubmitChanges();
         }
 
-        private static DaoModels.FieldGroup MaptoRuleFields(DtoModels.FieldGroup fieldGroup, int? prevGroup, int ruleId)
+        private static Models.DAO.FieldGroup MaptoDbFieldGroup(this FieldGroup fieldGroup, int? prevGroup, int ruleId)
         {
-            return new DaoModels.FieldGroup
+            return new Models.DAO.FieldGroup
             {
                 Name = fieldGroup.Name,
                 Operator = fieldGroup.LogicOperator,
                 PrevGroupId = prevGroup,
                 PrevGroupOperator = fieldGroup.PrevGroupLogicOperator,
                 RuleId = ruleId
-
             };
-            throw new System.NotImplementedException();
         }
 
-        private static DaoModels.Rule MaptoDbRule(Rule rule, int formulaId, int? prevRule)
+        private static Models.DAO.Rule MaptoDbRule(this Rule rule, int formulaId, int? prevRule)
         {
-            return new DaoModels.Rule()
+            return new Models.DAO.Rule()
             {
                 Name = rule.Name,
                 Description = rule.Description,
                 Formula = formulaId,
                 PrevRule = prevRule
+            };
+        }
+
+        private static ConfTipology MaptoDbConfTipology(this Models.DTO.Tipology t)
+        {
+            return new Models.DAO.ConfTipology
+            {
+                MacroType = t.MacroType,
+                TypeOne = t.TypeOne,
+                TypeTwo = t.TypeTwo
             };
         }
     }

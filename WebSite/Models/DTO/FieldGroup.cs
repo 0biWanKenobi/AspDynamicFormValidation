@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-
-namespace WebSite.Models.DTO
+namespace CCONTACT.Models.DTO
 {
     public class FieldGroup
     {
         public string Name {get; set;}
+
+        [JsonProperty(PropertyName = "id")]
+        public int Id { get; set; }
 
         [JsonProperty(PropertyName = "fieldNames")]
         public List<string> FieldList { get; set; }
@@ -16,6 +18,12 @@ namespace WebSite.Models.DTO
 
         [JsonProperty(PropertyName = "prevRuleGroupRelationship")]
         public string PrevGroupLogicOperator { get; set; }
+
+        [JsonProperty(PropertyName = "prevFieldGroupId")]
+        public int? PrevFieldGroupId { get; set; }
+
+        [JsonProperty(PropertyName = "removedFieldIds")]
+        public List<int> RemovedFieldIds { get; set; }
 
         [JsonProperty(PropertyName ="field1")]
         public int? Field1 { get; set; }

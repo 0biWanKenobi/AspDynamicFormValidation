@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="ValidatorConfigurationTemplate.ascx.cs" Inherits="WebSite.ValidatorConfigurationTemplate" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="ValidatorConfigurationTemplate.ascx.cs" Inherits="CCONTACT.ValidatorConfigurationTemplate" %>
 
 <%--
     --------------------------------
@@ -23,11 +23,13 @@
 
 <script type="kendo/html" id="formulaTipologyTemplate">
     <div class="formula-tipology margin-topbottom-10">
-        <div id="formula-macrotype-#=configurationIndex#" class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Macrotipo"   data-text-field="macrotype" data-value-field="macrotype" data-bind="value: associatedTipologies[#=configurationIndex#].chosenMacrotype, source: availableTipologies.macrotypeCollection"></div>
-        <div id="formula-type-one-#=configurationIndex#"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Tipologia 1" data-text-field="tipology" data-value-field="tipology" data-bind="value: associatedTipologies[#=configurationIndex#].chosenTypeOne,   source: availableTipologies.typeoneCollection" data-cascade-from="formula-macrotype-#=configurationIndex#"></div>
-        <div id="formula-type-two-#=configurationIndex#"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Tipologia 2" data-text-field="subtype" data-value-field="subtype" data-bind="value: associatedTipologies[#=configurationIndex#].chosenTypeTwo,   source: availableTipologies.typetwoCollection" data-cascade-from="formula-type-one-#=configurationIndex#"></div>
+        <div id="formula-macrotype-#=configurationIndex#" class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Macrotipo"    data-value-primitive="true" data-text-field="value" data-value-field="value" data-bind="value: associatedTipologies[#=configurationIndex#].chosenMacrotype, source: availableTipologies[#=configurationIndex#].macrotypeCollection"></div>
+        <div id="formula-type-one-#=configurationIndex#"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Tipologia 1"  data-value-primitive="true" data-text-field="value" data-value-field="value" data-bind="value: associatedTipologies[#=configurationIndex#].chosenTypeOne,   source: availableTipologies[#=configurationIndex#].typeoneCollection" data-cascade-from="formula-macrotype-#=configurationIndex#"></div>
+        <div id="formula-type-two-#=configurationIndex#"  class="margin-10" data-role="dropdownlist" data-option-label="Seleziona Tipologia 2"  data-value-primitive="true" data-text-field="value" data-value-field="value" data-bind="value: associatedTipologies[#=configurationIndex#].chosenTypeTwo,   source: availableTipologies[#=configurationIndex#].typetwoCollection" data-cascade-from="formula-type-one-#=configurationIndex#"></div>
         #if(data.showAddTipologyButton) { #
-        <span class="k-icon k-i-add editor-plus-sign" title="Aggiungi tripletta" data-bind="click: addTipology"></span>
+        <span class="k-icon k-i-plus-circle pointer-cursor" title="Aggiungi tripletta" data-bind="click: addTipology"></span>
+        # } else { #
+        <span class="k-icon k-i-delete pointer-cursor" title="Rimuovi tripletta" data-id="#=configurationIndex#" data-bind="click: removeTipology"></span>
         # } #
     </div>
 </script>
@@ -52,7 +54,7 @@
             <div>
                 Regola #=ruleId#<input type="text" class="margin-10 rule-description k-textbox" placeholder="Descrizione" data-bind="value: ruleDescription"/>
                 <a href="\\#" class="k-primary configurator-save-rule" data-icon="save" data-role="button" data-bind="click: saveRule, enabled: canSave()">Salva regola</a>
-                <a href="\\#" class="configurator-add-rulegroup"  data-role="button" data-icon="add" data-bind="click: addRuleGroup">Aggiungi gruppo</a>                
+                <a href="\\#" class="configurator-add-rulegroup"  data-role="button" data-icon="add" data-bind="click: addFieldGroup">Aggiungi gruppo</a>                
             </div>
             
             <div class="margin-topbottom-10">
@@ -67,8 +69,12 @@
 
 
 <script type="kendo/html" id="fieldGroupTemplate">
-    <div class="editor-rule-group #=ruleName#">   
-        <p class="margin-10 rule-group-name">Gruppo #=editorId#</p>        
+    <div class="editor-rule-group #=ruleName# group#=editorId#" >   
+        <p class="margin-10 rule-group-name">
+            Gruppo #=editorId# # if (editorId > 1) { # 
+            <span class="k-icon k-i-delete pointer-cursor" title="Rimuovi gruppo" data-id="#=editorId#" data-bind="click: removeFieldGroup"></span>
+            # } #
+        </p>        
         <div class="margin-10" data-bind="visible: showAddField">
             <div class="logicOperatorDropdownlist" data-role="dropdownlist" data-option-label="Seleziona opzione" data-text-field="name" data-value-field="value" data-value-primitive="true" data-bind="value: operator, source: operatorDataSource"></div> condizione.
         </div>
@@ -101,7 +107,9 @@
     <div class="margin-10 editor-field">
         <div class="fieldSelectionDropdownlist" data-role="dropdownlist" data-option-label="Seleziona opzione" data-text-field="name" data-value-field="value" data-value-primitive="true" data-bind="value: #=fieldName#, source: fieldDataSource"></div> è valorizzato.
         #if(data.showAddFieldButton) { #
-        <span class="k-icon k-i-add editor-plus-sign" title="Aggiungi campo obbligatorio" data-bind="click: addField"></span>
+        <span class="k-icon k-i-plus-circle editor-plus-sign pointer-cursor" title="Aggiungi campo obbligatorio" data-bind="click: addField"></span>
+        # } else { #
+        <span class="k-icon k-i-delete pointer-cursor" title="Rimuovi campo obbligatorio" data-field-name="#=fieldName#" data-field-group-association-id="#=fieldToGroupAssociationId#" data-bind="click: removeField"></span>
         # } #
     </div>
 </script>

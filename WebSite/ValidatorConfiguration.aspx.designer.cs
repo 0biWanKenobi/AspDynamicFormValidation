@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WebSite {
+namespace CCONTACT {
     
     
     public partial class ValidatorConfiguration {

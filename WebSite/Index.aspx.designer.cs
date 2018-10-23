@@ -7,7 +7,7 @@
 // </generato automaticamente>
 //------------------------------------------------------------------------------
 
-namespace WebSite {
+namespace CCONTACT {
     
     
     public partial class Index {

@@ -6,13 +6,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Script.Services;
 using System.Web.Services;
+using CCONTACT.Business;
+using CCONTACT.Models.DTO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using WebSite.Business;
-using WebSite.Models.DTO;
 
-
-namespace WebSite
+namespace CCONTACT
 {
     public partial class ValidatorConfiguration : System.Web.UI.Page
     {
@@ -28,13 +27,16 @@ namespace WebSite
             dynamic config = JsonConvert.DeserializeObject(configuration);
 
             var formula = ((JObject) config.formula).ToObject<Formula>();
-            var tipologies = ((JArray) config.tipologies).ToObject<List<Tipology>>();
+            var jtipologies = ((JArray) config.tipologies);
+            var tipologies = jtipologies.ToObject<List<Tipology>>();
+            var removedTipologies = ((JArray) config.removedTipologies).ToObject<List<int>>();
+            //var tipologies = ((JArray) config.tipologies).ToObject<List<Tipology>>();
 
             var ruleNameList = ((JArray)config.ruleNames).ToObject<List<string>>();
             var ruleList = ruleNameList.Select(ruleName =>
             {
                 var rule = (JObject)config[ruleName];
-                var fieldGroups = ExtractFieldGroup(rule, ruleNameList);
+                var fieldGroups = ExtractFieldGroup(rule);
                 var dtoRule = rule.ToObject<Rule>();
                 dtoRule.RuleFieldDefinitions = fieldGroups.ToList();
                 return dtoRule;
@@ -43,9 +45,9 @@ namespace WebSite
             // Having a formula Id means that it exists on db
             // because the Id is the row number
             if(formula.Id.HasValue)
-                DataLayer.UpdateValidationConfig(formula.Id.Value, ruleList, tipologies);
+                DataLayer.UpdateValidationConfig(formula.Id.Value, ruleList, tipologies, removedTipologies);
             else
-                DataLayer.SaveValidationConfig(1, formula, ruleList);
+                DataLayer.SaveValidationConfig(1, formula, ruleList, tipologies);
 
             return new HttpResponseMessage()
             {

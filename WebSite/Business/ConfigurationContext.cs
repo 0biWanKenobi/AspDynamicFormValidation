@@ -1,10 +1,10 @@
 ﻿using System.Data;
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
-using WebSite.Models.DAO;
-using Rule = WebSite.Models.DAO.Rule;
+using CCONTACT.Models.DAO;
+using Rule = CCONTACT.Models.DAO.Rule;
 
-namespace WebSite.Business
+namespace CCONTACT.Business
 {
     public class ConfigurationContext : DataContext
     {
@@ -16,6 +16,8 @@ namespace WebSite.Business
         public Table<FieldGroupField> FieldGroupFields;
         public Table<Tipology> Tipologies;
         public Table<TipologyFormula> TipologiesFormulas;
+        public Table<ConfTipologyFormula> ConfTipologiesFormulas;
+        public Table<ConfTipology> ConfTipologies;
 
         public ConfigurationContext(string fileOrServerOrConnection) : base(fileOrServerOrConnection)
         {
@@ -32,5 +34,7 @@ namespace WebSite.Business
         public ConfigurationContext(IDbConnection connection, MappingSource mapping) : base(connection, mapping)
         {
         }
+
+        
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace WebSite.Models.DTO
+namespace CCONTACT.Models.DTO
 {
 
     public class Rule
@@ -21,7 +21,8 @@ namespace WebSite.Models.DTO
 
         public List<FieldGroup> RuleFieldDefinitions { get; set; }
 
+        [JsonProperty(PropertyName = "removedFieldGroupIds")]
+        public List<int> RemovedFieldGroupIds { get; set; }
         
-        public string Formula { get; set; }
     }
 }

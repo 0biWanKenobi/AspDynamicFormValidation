@@ -1,7 +1,6 @@
 ﻿using System.Data.Linq.Mapping;
 
-
-namespace WebSite.Models.DAO
+namespace CCONTACT.Models.DAO
 {
     /**
      * Association table between formulas and tipologies.
@@ -10,10 +9,10 @@ namespace WebSite.Models.DAO
     [Table(Name = "tconfig_tipologies_formulas")]
     public class TipologyFormula
     {
-        [Column(Name = "ttf_formula_id")]
+        [Column(Name = "ttf_formula_id", IsPrimaryKey = true)]
         public int FormulaId { get; set; }
 
-        [Column(Name = "ttf_tipology_id")]
+        [Column(Name = "ttf_tipology_id", IsPrimaryKey = true)]
         public int TipologyId { get; set; }
     }
 }

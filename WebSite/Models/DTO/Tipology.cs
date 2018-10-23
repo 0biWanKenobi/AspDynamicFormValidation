@@ -1,9 +1,12 @@
 ﻿using Newtonsoft.Json;
 
-namespace WebSite.Models.DTO
+namespace CCONTACT.Models.DTO
 {
     public class Tipology
     {
+        [JsonProperty(PropertyName = "chosenTipologyId")] 
+        public int? Id { get; set; }
+
         [JsonProperty(PropertyName = "chosenMacroType")]       
         public string MacroType { get; set; }
         

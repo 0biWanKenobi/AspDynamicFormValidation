@@ -1,6 +1,6 @@
 ﻿using System.Web.Optimization;
 
-namespace WebSite
+namespace CCONTACT
 {
     public class BundleConfig
     {

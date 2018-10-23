@@ -1,6 +1,6 @@
 ﻿using System.Data.Linq.Mapping;
 
-namespace WebSite.Models.DAO
+namespace CCONTACT.Models.DAO
 {
     [Table(Name = "tconfig_tipologie")]
     public class ConfTipology

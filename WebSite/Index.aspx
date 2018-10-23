@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Index.aspx.cs" Inherits="WebSite.Index" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Index.aspx.cs" Inherits="CCONTACT.Index" %>
 <%@ Import Namespace="System.Web.Optimization" %>
 <%@ Register src="~/jsLiveBuilder.ascx" tagName="LiveBuilder" tagPrefix="js" %>
 <!DOCTYPE html>

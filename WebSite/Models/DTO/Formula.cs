@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace WebSite.Models.DTO
+namespace CCONTACT.Models.DTO
 {
     public class Formula
     {

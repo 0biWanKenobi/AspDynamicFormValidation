@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="jsLiveBuilder.ascx.cs" Inherits="WebSite.JsLiveBuilder" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="jsLiveBuilder.ascx.cs" Inherits="CCONTACT.JsLiveBuilder" %>
 <script type = "text/javascript">
 
     (function() {

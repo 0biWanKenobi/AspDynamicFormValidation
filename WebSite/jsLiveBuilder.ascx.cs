@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Web.UI;
-using Rule = WebSite.Models.DTO.Rule;
 
-namespace WebSite
+namespace CCONTACT
 {
     public partial class JsLiveBuilder : UserControl
     {

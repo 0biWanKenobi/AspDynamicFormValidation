@@ -1,7 +1,7 @@
 ﻿using System.Data.Linq.Mapping;
 using System.Xml.Linq;
 
-namespace WebSite.Models.DAO
+namespace CCONTACT.Models.DAO
 {
     /**
      * This table is used by the configuration utility

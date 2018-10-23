@@ -39,11 +39,13 @@
         var groupOperator = $("Operator", fieldGroup).html();
         var prevGroupOperator = $("PrevGroupOperator", fieldGroup).html();
 
-        var fieldGroupViewModel = ruleViewModel.addRuleGroup();
+        var fieldGroupViewModel = ruleViewModel.addFieldGroup(null, $(fieldGroup).attr("Id"));
         fieldGroupViewModel.set("operator", getLogicOperator(groupOperator));
+        fieldGroupViewModel.set("prevFieldGroupId", $("PrevGroup", fieldGroup));
 
         $("Fields Field", fieldGroup).each(function(j, field) {
-            var newFieldName = fieldGroupViewModel.addFieldFromConfig();
+            //pass id of field<->fieldgroup association
+            var newFieldName = fieldGroupViewModel.addFieldFromConfig($("FieldId", field).html());
             fieldGroupViewModel.set(newFieldName, parseInt($(field).attr("Id")));
         });
 
@@ -55,8 +57,8 @@
 
     var loadRuleConfiguration = function(rule, ruleCount) {
         var ruleViewModel = formConfigurator.loadConfigurationRule($("PrevRuleOperator", rule), $("Description", rule).html(), $(rule).attr("Name"), $(rule).attr("Id"), $(rule).attr("Id"));
-
-
+        //set value here to avoid having it as true for rules added by the user 
+        ruleViewModel.set("ruleIsDefInFormula", true);
         formConfigurator.bindRuleToFormulaDefinition(
             $(rule).attr("Name"),
             "Regola " + ruleCount,
@@ -71,6 +73,8 @@
             fieldGroupViewModels["editor" + (i + 1)] = fieldGroupViewModel;
         });
 
+        ruleViewModel.bind("change", function(e) { ruleViewModel.change(e) });
+
         return {
             ruleViewModel: ruleViewModel,
             fieldGroupViewModels: fieldGroupViewModels
@@ -83,16 +87,27 @@
     };
 
 
-    var loadFormulaTipologyConfiguration = function(tipologies) {
+    var loadFormulaTipologyConfiguration = function(tipologies, availableTipologies) {
 
         var associatedTipologies = new Array();
 
         tipologies.each(function(i, tipology) {
+            var availableTipologiesLength = availableTipologies.length;
+            availableTipologies.push({
+                macrotypeCollection: newMacroTypeDataSource(),
+                typeoneCollection: newTipologyDataSource(),
+                typetwoCollection: newSubtypeDataSource(function() {
+                    if (configurationLoaderViewModel.formula != null)
+                        return configurationLoaderViewModel.formula.get("associatedTipologies")[availableTipologiesLength].chosenMacrotype;
+                    return null;
+                })
+            });
             bindFormulaTipology(associatedTipologies.length, associatedTipologies.length === 0);
             associatedTipologies.push({
-                chosenMacrotype: {macrotype:$(tipology).attr("Macrotype")},
-                chosenTypeOne:   {tipology: $(tipology).attr("TypeOne")},
-                chosenTypeTwo:   {subtype:$(tipology).attr("TypeTwo")}
+                chosenTipologyId: $(tipology).attr("Id") ,
+                chosenMacrotype:  $(tipology).attr("Macrotype"),
+                chosenTypeOne:    $(tipology).attr("TypeOne"),
+                chosenTypeTwo:    $(tipology).attr("TypeTwo")
             });
            
         });
@@ -123,7 +138,8 @@
             ruleDirtyStatuses[ruleName] = false;
         });
 
-       
+        var availableTipologies = new Array();
+        var associatedTipologies = loadFormulaTipologyConfiguration(tipologies, availableTipologies);
 
         var formulaViewModel = formConfigurator.loadFormula(
             new FormulaDataModel({
@@ -137,12 +153,9 @@
                 ruleDirtyStatuses: ruleDirtyStatuses,
                 rules: ruleViewModels,
                 ruleHasDef: $(rules).length > 0,
-                associatedTipologies: loadFormulaTipologyConfiguration(tipologies),
-                availableTipologies: {
-                    macrotypeCollection: newMacroTypeDataSource(),
-                    typeoneCollection: newTipologyDataSource(),
-                    typetwoCollection: newSubtypeDataSource(function () {return configurationLoaderViewModel.formula.get("associatedTipologies").chosenMacrotype})
-                }
+                associatedTipologies: associatedTipologies,
+                removedTipologies: new Array(),
+                availableTipologies: availableTipologies
             }),
             formulaKendoTemplate
         );
@@ -211,7 +224,12 @@
                         alert("Error of type " + errorObj + "while loading tipologies");
                     };
                     callAjax("LoadTipologies",
-                        "{filters: " + JSON.stringify(e.data.filter.filters) + "}",
+                        "{filters: " + JSON.stringify([
+                            {
+                                field: "tipology",
+                                operator: "eq",
+                                value: e.data.filter.filters[0].value
+                            }]) + "}",
                         callBack,
                         errorCallBack);
                 }
@@ -231,10 +249,19 @@
                     var errorCallBack = function(jXhr, error, errorObj) {
                         alert("Error of type " + errorObj + "while loading subtypes");
                     };
-
-                    e.data.filter.filters.push({ field: "macrotype", operator: "eq", value: fetchFilterFn() });
+                   
                     callAjax("LoadSubtypes",
-                        "{filters: " + JSON.stringify(e.data.filter.filters) + "}",
+                        "{filters: " + JSON.stringify([
+                            {
+                                field: "tipology",
+                                operator: "eq",
+                                value: e.data.filter.filters[0].value
+                            },
+                            {
+                                field: "macrotype",
+                                operator: "eq",
+                                value: fetchFilterFn() || null
+                            }]) + "}",
                         callBack,
                         errorCallBack);
                 }
@@ -265,13 +292,14 @@
             formulaHasDef: { type: "boolean", defaultValue: false },
 
             availableTipologies: {
-                defaultValue: {
+                defaultValue: [{
                     macrotypeCollection: newMacroTypeDataSource(),
                     typeoneCollection: newTipologyDataSource(),
-                    typetwoCollection: newSubtypeDataSource(function () {return configurationLoaderViewModel.formula.get("associatedTipologies").chosenMacrotype})
-                }
+                    typetwoCollection: newSubtypeDataSource(function () {return configurationLoaderViewModel.formula.get("associatedTipologies")[0].chosenMacrotype})
+                }]
             },
             associatedTipologies: { defaultValue: new Array() },
+            removedTipologies: {defaultValue: new Array() },
             rules: { defaultValue: {} },
             ruleDirtyStatuses: { defaultValue: {} },
             ruleCount: { type: "number", defaultValue: 0 },
@@ -307,12 +335,33 @@
         },
         addTipology: function() {
 
+            var availableTipologiesLength = this.availableTipologies.length;
+            this.availableTipologies.push({
+                macrotypeCollection: newMacroTypeDataSource(),
+                typeoneCollection: newTipologyDataSource(),
+                typetwoCollection: newSubtypeDataSource(function() {
+                    if (configurationLoaderViewModel.formula != null)
+                        return configurationLoaderViewModel.formula.get("associatedTipologies")[availableTipologiesLength].chosenMacrotype;
+                    return null;
+                })
+            });
+
             bindFormulaTipology(this.associatedTipologies.length, this.associatedTipologies.length === 0);
             this.associatedTipologies.push({
-                chosenMacrotype: {name: null, value: null},
-                chosenTypeOne:   {name: null, value: null},
-                chosenTypeTwo:   {name: null, value: null}
+                chosenTipologyId: null,
+                chosenMacrotype:  null,
+                chosenTypeOne:    null,
+                chosenTypeTwo:    null
             });
+        },
+        removeTipology: function(e) {
+            var associatedTipologyId = $(e.currentTarget).data("id");
+            var tipology = $(e.currentTarget).parent();
+            kendo.unbind(tipology);
+            var removedTipology = this.associatedTipologies.splice(associatedTipologyId, 1)[0];
+            this.removedTipologies.push(removedTipology.chosenTipologyId);
+            tipology.remove();
+
         },
         newRule: function() {
             this.set("ruleCount", this.get("ruleCount") + 1);
@@ -349,18 +398,18 @@
         formula: null,
 
         tipology: kendo.observable({
-            chosenMacrotype: { macrotype: null },
-            chosenTypeOne: { tipology: null },
-            chosenTypeTwo: { subtype: null }
+            chosenMacrotype: null,
+            chosenTypeOne: null,
+            chosenTypeTwo: null
         }),
-        availableTipologies: {
+        availableTipologies: [{
             //configurationLoaderViewModel.tipology.chosenMacrotype.macrotype
             macrotypeDatasource: newMacroTypeDataSource(),
             tipologyDatasource: newTipologyDataSource(),
             subtypeDatasource: newSubtypeDataSource(function() {
-                return configurationLoaderViewModel.get("tipology").chosenMacrotype.macrotype;
+                return configurationLoaderViewModel.get("tipology").chosenMacrotype;
             })
-        },    
+        }],    
         isLoaded:false,
         isConfigurationLoaded: function() {
             return this.get("isLoaded");
@@ -375,9 +424,9 @@
         loadConfiguration: function() {
             var json = "{tipology: " +
                 JSON.stringify({
-                    macroType: this.tipology.chosenMacrotype.macrotype,
-                    typeOne:   this.tipology.chosenTypeOne.tipology,
-                    typeTwo:   this.tipology.chosenTypeTwo.subtype 
+                    macroType: this.tipology.chosenMacrotype,
+                    typeOne:   this.tipology.chosenTypeOne,
+                    typeTwo:   this.tipology.chosenTypeTwo 
                 }) +                                            
                 "}";
             requestConfiguration(json);

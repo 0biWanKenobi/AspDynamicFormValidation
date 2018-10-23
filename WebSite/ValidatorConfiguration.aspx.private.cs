@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using CCONTACT.Models.DTO;
 using Newtonsoft.Json.Linq;
-using DTOModels = WebSite.Models.DTO;
 
-namespace WebSite
+namespace CCONTACT
 {
     public partial class ValidatorConfiguration
     {
-        private static IEnumerable<DTOModels.FieldGroup> ExtractFieldGroup(JObject rule,  IEnumerable<string> ruleNameList)
+        private static IEnumerable<FieldGroup> ExtractFieldGroup(JObject rule)
         {
-            return ruleNameList.Select( name =>
+            return rule["rulegroups"].ToObject<List<string>>().Select( name =>
             {
-                var fieldGroup = rule[name].ToObject<DTOModels.FieldGroup>();
+                var fieldGroup = rule[name].ToObject<FieldGroup>();
                 fieldGroup.Name = name;
                 return fieldGroup;
             });

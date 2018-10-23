@@ -163,6 +163,7 @@
         configuration.formula.ruleCount = configurationViewModels.formula.get("ruleCount");
         configuration.formula.description = configurationViewModels.formula.get("description");
         configuration.tipologies = configurationViewModels.formula.associatedTipologies;
+        configuration.removedTipologies = configurationViewModels.formula.removedTipologies;
 
         var jsonString = $.trim(JSON.stringify(configuration));
         submitJson(jsonString);
@@ -264,37 +265,62 @@
             ruleName: ruleName,
             prevRuleOperator: prevRuleOperator,
             ruleHasDef: false,
+            ruleIsDefInFormula: false,
             ruleDefId: ruleName + "-def",
             ruleDescription: ruleDescription,
             dirty: false,
             flowIdentificators: flowIdentificators,
-
+            removedFieldGroupIds: new Array(),
+            change: function(e){
+                switch(e.field){
+                    case "ruleDescription": this.set("dirty", this.get("ruleDescription").length > 0); break;
+                    case "dirty": break;
+                    default: this.set("dirty", true);
+                }               
+            },
             canSave: canSaveRule,
-
+            removeFieldGroup: function(fieldGroup) {
+                // need to add group name to fieldgroup div container, eg editor-rule-group rule1 group1
+                var fieldGroupElement = $(".editor-rule-group." + fieldGroup.ruleName + ".group"+fieldGroup.editorId);
+                var ruleSegment = $("#" + fieldGroup.ruleName + "-editor-" + fieldGroup.editorId).parent();
+                ruleSegment.remove();
+                fieldGroupElement.remove();
+                var fieldGroupId = fieldGroup.get("dbId");
+                if (fieldGroupId)
+                    removedFieldGroupIds.push(fieldGroupId);
+                this.set("dirty", true);
+            },
             updateRuleDefinition: updateRuleDefinition,
             groupCount: 0, //TO-DO has to be 0 in prod
+            updateRuleName: function() {
+                this.set("dirty", true);
+            },
             saveRule: function() {
                 saveRule(this.ruleName);
                 configurationViewModels.formula.set("pristine", false);
                 this.set("dirty", false);
-                updateFormulaDefinition(this.ruleName, "Regola "+this.ruleId, this.prevRuleOperator);
+                //update formula definition only if it does not yet contain this rule
+                if(!this.get("ruleIsDefInFormula")) {
+                    updateFormulaDefinition(this.ruleName, "Regola " + this.ruleId, this.prevRuleOperator);
+                    this.set("ruleIsDefInFormula", true);
+                }
             },
             toggleRule: function() {
                 $("#" + ruleName).hasClass("minimized")
                     ? $("#" + ruleName).removeClass("minimized") && $("#" + ruleName+" .minimize-button .k-icon").attr("class", "k-icon k-i-minus")
                     : $("#" + ruleName).addClass("minimized") && $("#" + ruleName+" .minimize-button .k-icon").attr("class", "k-icon k-i-add");
             },
-            addRuleGroup: function(e) {
+            addFieldGroup: function(e, fieldGroupDbId) {
                 if (e) //invoked by user action, so there is an event object "e".
                     // At this point formula obj exists in configurationViewModels
                 {
-                    var fieldGroupDataModel = addGroupToRule(this);
+                    var fieldGroupDataModel = addFieldGroupToRule(this, null);
                     fieldGroupDataModel.addField();
                     configurationViewModels.formula.rules[ruleName].fieldGroupViewModels["editor"+fieldGroupDataModel.editorId]=fieldGroupDataModel;
                 }
                 else
                     // fieldGroupDataModel is added later in configurationLoading.js
-                    return addGroupToRule(this);
+                    return addFieldGroupToRule(this, fieldGroupDbId);
 // ReSharper disable once NotAllPathsReturnValue
             }
         });
@@ -405,25 +431,30 @@
         var rule = configurationViewModels.formula.rules[ruleName];
         
         configuration[ruleName] = {
-            id: rule.get("id"),
+            id: rule.ruleViewModel.get("id"),
             name: ruleName,
             formula: configurationViewModels.formula.get("name"), 
             rulegroups: new Array(),
-            description: rule.ruleViewModel.ruleDescription
+            description: rule.ruleViewModel.ruleDescription,
+            removedFieldGroupIds: rule.ruleViewModel.removedFieldGroupIds
         };
 
         for(
-            var i = 1, groupName = "editor"+i, fieldGroupViewModel = rule.fieldGroupViewModels.get(groupName);
+            var i = 1;
             i<=rule.ruleViewModel.groupCount;
             i++
         ){
+            var fieldGroupViewModel = rule.fieldGroupViewModels.get("editor"+i);
             var editorElementId = "editor-" + fieldGroupViewModel.editorId;
             configuration[ruleName]["rulegroups"].push(editorElementId);
 
             configuration[ruleName][editorElementId] = {
+                id: fieldGroupViewModel.dbId,
                 fieldNames: fieldGroupViewModel.fieldNames,
                 operator: fieldGroupViewModel.operator,
-                prevRuleGroupRelationship: fieldGroupViewModel.prevRuleGroupRelationship
+                prevRuleGroupRelationship: fieldGroupViewModel.prevRuleGroupRelationship,
+                prevFieldGroupId: fieldGroupViewModel.prevFieldGroupId,
+                removedFieldIds: fieldGroupViewModel.removedFieldIds
             };
             fieldGroupViewModel.fieldNames.forEach(function(field) {
                 configuration[ruleName][editorElementId][field] = fieldGroupViewModel[field];
@@ -437,10 +468,10 @@
 
     /**
      * Appends a field group to the DOM, and binds it to the a template
-     * @param {observable} viewModel fieldGroup kendo ViewModel
-     * @returns {observable} the viewModel passed in input
+     * @param {observable} viewModel rule kendo ViewModel
+     * @returns {observable} the fieldgroup viewModel
      */
-    var addGroupToRule = function (viewModel) {
+    var addFieldGroupToRule = function (viewModel, fieldGroupDbId) {
         viewModel.set("groupCount", viewModel.get("groupCount") + 1);
         var data = {
             editorId: viewModel.get("groupCount"),
@@ -457,7 +488,7 @@
             rule.append(initializedTemplate);
         }
 
-        var fieldGroupViewModel = newFieldGroupViewModel(viewModel, data.ruleName, data.editorId, data.groupClass);
+        var fieldGroupViewModel = newFieldGroupViewModel(viewModel, data.ruleName, data.editorId, fieldGroupDbId, data.groupClass);
         kendo.bind(initializedTemplate, fieldGroupViewModel);
         return fieldGroupViewModel;
     };
@@ -477,7 +508,7 @@
      *
      * @returns {string} Name of the new field
      */
-    var addFieldToGroup = function(showAddFieldButton, viewModel) {
+    var addFieldToGroup = function(showAddFieldButton, fieldToGroupAssociationId, viewModel) {
         var fieldNames = viewModel.get("fieldNames");
         var newFieldName = "field" + (fieldNames.length + 1);
         fieldNames.push(newFieldName);
@@ -485,7 +516,8 @@
        
         var newFieldHtml = $(fieldTemplate({
             fieldName: newFieldName,
-            showAddFieldButton: showAddFieldButton
+            showAddFieldButton: showAddFieldButton,
+            fieldToGroupAssociationId: fieldToGroupAssociationId
         }));
 
         $(".editor-fields."+viewModel.ruleName+"."+viewModel.groupClass).append(newFieldHtml);
@@ -519,29 +551,46 @@
             "rule":                      {defaultValue: null},
             "rulename":                  {type: "string"},
             "editorId":                  {type: "number"},
+            "dbId":                      {type: "number"},
             "operator":                  {type: "string"},
             "prevRuleGroupRelationship": {type: "string"},
+            "prevFieldGroupId":          {type: "number"},
             "field1":                    {type: "string"},
             "fieldCount":                {type: "number"},
-            "fieldNames":                {defaultValue: null}
+            "fieldNames":                {defaultValue: null},
+            "removedFieldIds":           {defaultValue: new Array()}
         },
            
         canSave: canSaveFieldGroup,
         showAddField: function() {
             return this.get("fieldCount") > 1;
         },
-        addFieldFromConfig: function() {
-            var newFieldName = addFieldToGroup(this.get("fieldCount") === 0, this);
+        addFieldFromConfig: function(fieldToGroupAssociationId) {
+            var newFieldName = addFieldToGroup(this.get("fieldCount") === 0, fieldToGroupAssociationId, this);
             this.set("fieldCount", this.get("fieldCount")+1);
             return newFieldName;
         },
         addField: function(e) {
-            addFieldToGroup(this.get("fieldCount") === 0, this);
+            addFieldToGroup(this.get("fieldCount") === 0, null, this);
             this.set("fieldCount", this.get("fieldCount")+1);
+        },
+        removeField: function(e) {
+            $(e.target).parent().remove();
+            var fieldName = $(e.target).data("fieldName");
+            var removedFieldNamePos = this.fieldNames.indexOf(fieldName);
+            this.fieldNames.splice(removedFieldNamePos, 1);
+            var fieldGroupAssociationId = $(e.target).data("fieldGroupAssociationId");
+            if(fieldGroupAssociationId != null)
+                this.removedFieldIds.push(fieldGroupAssociationId);
+
+            this.set("fieldCount", this.get("fieldCount")-1);
         },
         saveFieldGroup: function() {
             this.saveFieldGroupFromConfig();
             this.rule.set("dirty", true);
+        },
+        removeFieldGroup: function() {
+            this.rule.removeFieldGroup(this);
         },
         saveFieldGroupFromConfig() {
             if (this.get("pristine")) {
@@ -552,14 +601,16 @@
         }
     });
 
-     function newFieldGroupViewModel(ruleViewModel, ruleName, editorId, groupClass) {
-        var fgDataModel = new FieldGroupDataModel({
-            pristine: true,
-            rule: ruleViewModel,
-            ruleName: ruleName,
-            editorId: editorId,
-            groupClass: groupClass,
-            fieldNames: new Array(),
+     function newFieldGroupViewModel(ruleViewModel, ruleName, editorId, dbId, groupClass) {
+         var fgDataModel = new FieldGroupDataModel({
+             pristine: true,
+             rule: ruleViewModel,
+             ruleName: ruleName,
+             editorId: editorId,
+             dbId: dbId,
+             groupClass: groupClass,
+             fieldNames: new Array(),
+             removedFieldIds: new Array(),
             fieldCount: 0,
             prevRuleGroupRelationship: null
         });
