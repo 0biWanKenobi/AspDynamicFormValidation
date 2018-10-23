@@ -29,6 +29,7 @@ AS SELECT
          ,[Fields] = (SELECT
               tf2.tf_name AS [@Name]
              ,tf2.tf_codint AS [@Id]
+			 , tff_codint AS [FieldId]
             FROM tconfig_fields tf2
             INNER JOIN tconfig_fieldgroup_fields tff
               ON tf1.tf_codint = tff.tff_fieldgroup_id
