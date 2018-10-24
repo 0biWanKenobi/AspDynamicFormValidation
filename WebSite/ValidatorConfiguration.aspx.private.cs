@@ -9,7 +9,7 @@ namespace CCONTACT
     {
         private static IEnumerable<FieldGroup> ExtractFieldGroup(JObject rule)
         {
-            return rule["rulegroups"].ToObject<List<string>>().Select( name =>
+            return rule["fieldGroups"].ToObject<List<string>>().Select( name =>
             {
                 var fieldGroup = rule[name].ToObject<FieldGroup>();
                 fieldGroup.Name = name;

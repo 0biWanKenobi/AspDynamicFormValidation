@@ -26,7 +26,8 @@
             typeOne:   null,
             typeTwo:   null
         },
-        ruleNames: new Array()
+        ruleNames: new Array(),
+        deletedRuleIds: new Array()
     };
     formConfigurator.configuration = configuration;
 
@@ -287,7 +288,11 @@
                 fieldGroupElement.remove();
                 var fieldGroupId = fieldGroup.get("dbId");
                 if (fieldGroupId)
-                    removedFieldGroupIds.push(fieldGroupId);
+                    this.removedFieldGroupIds.push(fieldGroupId);
+
+                delete configurationViewModels.formula.rules[ruleName].fieldGroupViewModels["editor" +
+                    fieldGroup.editorId];
+
                 this.set("dirty", true);
             },
             updateRuleDefinition: updateRuleDefinition,
@@ -304,6 +309,23 @@
                     updateFormulaDefinition(this.ruleName, "Regola " + this.ruleId, this.prevRuleOperator);
                     this.set("ruleIsDefInFormula", true);
                 }
+            },
+            deleteRule: function() {
+                configurationViewModels.formula.set("pristine", false);
+
+                delete configurationViewModels.formula.rules[this.ruleName];
+
+                var rulePosInArray = configurationViewModels.formula.ruleNames.indexOf(this.ruleName);
+                if(rulePosInArray >= 0)
+                    configurationViewModels.formula.ruleNames.splice(1, rulePosInArray);
+
+                var ruleCount = configurationViewModels.formula.ruleCount;
+                configurationViewModels.formula.set("ruleCount", ruleCount - 1);
+
+                $(".formulaSegment.segment-" + this.ruleName).remove();
+                $("#" + this.ruleName).remove();
+                if(this.id)
+                    configuration.deletedRuleIds.push(this.id);
             },
             toggleRule: function() {
                 $("#" + ruleName).hasClass("minimized")
@@ -434,10 +456,11 @@
             id: rule.ruleViewModel.get("id"),
             name: ruleName,
             formula: configurationViewModels.formula.get("name"), 
-            rulegroups: new Array(),
+            fieldGroups: new Array(),
             description: rule.ruleViewModel.ruleDescription,
             removedFieldGroupIds: rule.ruleViewModel.removedFieldGroupIds
         };
+
 
         for(
             var i = 1;
@@ -445,8 +468,9 @@
             i++
         ){
             var fieldGroupViewModel = rule.fieldGroupViewModels.get("editor"+i);
+            if(!fieldGroupViewModel) continue;
             var editorElementId = "editor-" + fieldGroupViewModel.editorId;
-            configuration[ruleName]["rulegroups"].push(editorElementId);
+            configuration[ruleName]["fieldGroups"].push(editorElementId);
 
             configuration[ruleName][editorElementId] = {
                 id: fieldGroupViewModel.dbId,
@@ -480,9 +504,9 @@
             fieldName: "field1"
         };
         var initializedTemplate = $(fieldGroupTemplate(data));
-        var ruleGroups = $(".editor-rule-group." + data.ruleName);
-        if (ruleGroups.length > 0)
-            ruleGroups.last().after(initializedTemplate);
+        var fieldGroups = $(".editor-rule-group." + data.ruleName);
+        if (fieldGroups.length > 0)
+            fieldGroups.last().after(initializedTemplate);
         else {
             var rule = $("#" + viewModel.get("ruleName") + " .k-editor-content");
             rule.append(initializedTemplate);

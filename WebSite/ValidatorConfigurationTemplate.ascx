@@ -36,7 +36,7 @@
 
 
 <script type="kendo/html" id="formulaSegmentTemplate">
-    <span class="formulaSegment"> 
+    <span class="formulaSegment segment-#=ruleName#"> 
         # if(data.useDropDown) { #
         <div id="#='formula-'+ruleName#" data-bind="attr: {class: cssClass}" style="display:inline-block">
             <div style="width:100%" class="ruleOperatorDropDownlist" data-role="dropdownlist"  data-text-field="name" data-value-field="value" data-value-primitive="true" data-bind="value: selectedOption, source: logicalRuleOperators"></div> 
@@ -49,7 +49,10 @@
 
 <script type="kendo/html" id="ruleTemplate">
     <div id="#=ruleName#" class="rounded-border margin-10 padding-10">
-        <a href='\\#' data-role='button' class='minimize-button' data-icon='minus' data-bind='click: toggleRule'></a>
+        <a href='\\#' data-role='button' class='minimize-button' data-icon='minus' data-bind='click: toggleRule' title='Minimizza regola'></a>
+        # if (ruleId > 1) { #
+        <a href="\\#" data-role="button" class='delete-button' data-icon='delete' data-bind='click: deleteRule' title='Rimuovi regola'></a>
+        # } #
         <div class="k-editor-header">
             <div>
                 Regola #=ruleId#<input type="text" class="margin-10 rule-description k-textbox" placeholder="Descrizione" data-bind="value: ruleDescription"/>

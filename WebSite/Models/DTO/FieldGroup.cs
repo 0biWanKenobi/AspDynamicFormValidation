@@ -8,7 +8,7 @@ namespace CCONTACT.Models.DTO
         public string Name {get; set;}
 
         [JsonProperty(PropertyName = "id")]
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [JsonProperty(PropertyName = "fieldNames")]
         public List<string> FieldList { get; set; }

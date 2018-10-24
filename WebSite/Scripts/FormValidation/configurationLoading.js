@@ -130,7 +130,7 @@
 
         var formulaKendoTemplate = FormConfigurator.injectFormulaTemplate();
 
-        $("Rule", xmlConfiguration).each(function(i, rule) {
+        rules.each(function(i, rule) {
             var ruleAndFieldGroups = loadRuleConfiguration(rule, i+1);
             var ruleName = ruleAndFieldGroups.ruleViewModel.get("ruleName");
             ruleViewModels[ruleName] = ruleAndFieldGroups;

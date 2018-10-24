@@ -27,6 +27,9 @@ namespace CCONTACT
             dynamic config = JsonConvert.DeserializeObject(configuration);
 
             var formula = ((JObject) config.formula).ToObject<Formula>();
+
+            var removedRules = ((JArray) config.deletedRuleIds).ToObject<List<int>>();
+
             var jtipologies = ((JArray) config.tipologies);
             var tipologies = jtipologies.ToObject<List<Tipology>>();
             var removedTipologies = ((JArray) config.removedTipologies).ToObject<List<int>>();
@@ -45,7 +48,7 @@ namespace CCONTACT
             // Having a formula Id means that it exists on db
             // because the Id is the row number
             if(formula.Id.HasValue)
-                DataLayer.UpdateValidationConfig(formula.Id.Value, ruleList, tipologies, removedTipologies);
+                DataLayer.UpdateValidationConfig(formula.Id.Value, ruleList, tipologies, removedTipologies, removedRules);
             else
                 DataLayer.SaveValidationConfig(1, formula, ruleList, tipologies);
 

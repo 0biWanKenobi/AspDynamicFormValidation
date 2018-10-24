@@ -107,7 +107,7 @@ namespace CCONTACT.Business
             }
         }
 
-        public static void UpdateValidationConfig(int formulaId, IEnumerable<Rule> rules, IEnumerable<Tipology> tipologies, IEnumerable<int> removedTipologies)
+        public static void UpdateValidationConfig(int formulaId, IEnumerable<Rule> rules, IEnumerable<Tipology> tipologies, IEnumerable<int> removedTipologies, IEnumerable<int> removedRules)
         {
             using (var dataContext = new ConfigurationContext(ConnectionString))
             using (var transactionScope = new TransactionScope())
@@ -129,17 +129,30 @@ namespace CCONTACT.Business
                     else
                     {
                         UpdateRuleConfiguration(dataContext, rule, formulaId, prevRuleId);
+                        prevRuleId = prevRuleId ?? rule.Id;
                         //TO-DO: update fieldgroups configuration
+                        int? prevFieldGroupId = null;
                         foreach (var fieldGroup in rule.RuleFieldDefinitions)
                         {
-                            UpdateFieldGroupConfiguration(dataContext, fieldGroup);
+                            if (fieldGroup.Id.HasValue)
+                            {
+                                fieldGroup.PrevFieldGroupId = prevFieldGroupId;
+                                UpdateFieldGroupConfiguration(dataContext, fieldGroup);
+                                UpdateFieldGroupFieldsConfiguration(dataContext, fieldGroup.Id.Value, fieldGroup.Field1,
+                                    fieldGroup.Field2, fieldGroup.Field3, fieldGroup.Field4, fieldGroup.Field5);
+                                prevFieldGroupId = fieldGroup.Id;
+                            }
+                            else
+                            {
+                                prevFieldGroupId = SaveFieldGroupConfiguration(dataContext, prevRuleId.Value, fieldGroup, prevFieldGroupId);
+                            }
                             DeleteRemovedFields(dataContext, fieldGroup.RemovedFieldIds);
                         }
 
                         foreach (var fieldGroupId in rule.RemovedFieldGroupIds)
                         {
-                            RemoveFieldGroup(dataContext, fieldGroupId);
                             RemoveFieldGroupFields(dataContext, fieldGroupId);
+                            RemoveFieldGroup(dataContext, fieldGroupId);
                         }
                        
                     }
@@ -158,26 +171,48 @@ namespace CCONTACT.Business
                 // ReSharper disable once PossibleMultipleEnumeration
                 DeleteRemovedTipologies(dataContext, removedTipologies, formulaId);
 
+                DeleteRemovedRules(dataContext, removedRules);
+                
                 transactionScope.Complete();
             }
+        }
+
+        private static void DeleteRemovedRules(ConfigurationContext dataContext, IEnumerable<int> removedRuleIds)
+        {
+            var removedRules = dataContext.Rules.Where(r => removedRuleIds.Contains(r.Id));
+            
+            foreach (var removedRule in removedRules)
+            {
+                var removedFieldGroupIds = dataContext.FieldGroups.Where(fg => fg.RuleId == removedRule.Id).Select(fg => fg.Id);
+                foreach (var fieldGroupId in removedFieldGroupIds)
+                {
+                    RemoveFieldGroupFields(dataContext, fieldGroupId);
+                    RemoveFieldGroup(dataContext, fieldGroupId);
+                }
+            }
+            dataContext.Rules.DeleteAllOnSubmit(removedRules);
+            dataContext.SubmitChanges();
         }
 
         private static void DeleteRemovedFields(ConfigurationContext dataContext, List<int> fieldGroupRemovedFieldIds)
         {
             var deletedFields = dataContext.FieldGroupFields.Where(f => fieldGroupRemovedFieldIds.Contains(f.Id));
             dataContext.FieldGroupFields.DeleteAllOnSubmit(deletedFields);
+            dataContext.SubmitChanges();
         }
 
         private static void RemoveFieldGroupFields(ConfigurationContext dataContext, int fieldGroupId)
         {
             var removedFieldGroupFields = dataContext.FieldGroupFields.Where(fgf => fgf.FieldGroupId == fieldGroupId);
             dataContext.FieldGroupFields.DeleteAllOnSubmit(removedFieldGroupFields);
+            dataContext.SubmitChanges();
         }
 
         private static void RemoveFieldGroup(ConfigurationContext dataContext, int fieldGroupId)
         {
             var removedFieldGroup = dataContext.FieldGroups.First(fg => fg.Id == fieldGroupId);
             dataContext.FieldGroups.DeleteOnSubmit(removedFieldGroup);
+            dataContext.SubmitChanges();
         }
 
         private static void UpdateFieldGroupConfiguration(ConfigurationContext dataContext, Models.DTO.FieldGroup fieldGroup)
@@ -191,6 +226,7 @@ namespace CCONTACT.Business
             dbFieldGroup.Operator = fieldGroup.LogicOperator;
             dbFieldGroup.PrevGroupId = fieldGroup.PrevFieldGroupId;
             dbFieldGroup.PrevGroupOperator = fieldGroup.PrevGroupLogicOperator;
+            dataContext.SubmitChanges();
         }
 
         private static void UpdateFieldGroupFieldsConfiguration(ConfigurationContext dataContext, int fieldGroupId,
@@ -275,6 +311,7 @@ namespace CCONTACT.Business
                 dbTipology.MacroType = tipology.MacroType;
                 dbTipology.TypeOne = tipology.TypeOne;
                 dbTipology.TypeTwo = tipology.TypeTwo;
+                dataContext.SubmitChanges();
             }
             
             else
@@ -287,9 +324,8 @@ namespace CCONTACT.Business
                     FormulaId = formulaId,
                     TipologyId = dbTipology.Id
                 });
+                dataContext.SubmitChanges();
             }
-
-            dataContext.SubmitChanges();
         }
 
 

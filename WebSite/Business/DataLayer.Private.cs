@@ -27,6 +27,7 @@ namespace CCONTACT.Business
 
             currentRule.Description = rule.Description;
             currentRule.PrevRule = prevRule;
+            dataContext.SubmitChanges();
         }
 
         private static int SaveFieldGroupConfiguration(ConfigurationContext dataContext, int ruleId, FieldGroup fieldGroup, int? prevGroup)
