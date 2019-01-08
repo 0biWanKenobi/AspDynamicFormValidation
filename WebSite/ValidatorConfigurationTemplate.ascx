@@ -15,7 +15,7 @@
         <a href="\\#" class="margin-10 rule-new-button" data-role="button" data-icon="add" data-bind="click: newRule">Aggiungi Regola</a>
         <div class="formula-tipologies"></div>
         <div class="margin-topbottom-10">
-            <span>Definizione&nbsp;</span>
+            <span>Definizione:&nbsp;</span>
             <span class="configuration-formula-definition"></span>
         </div>        
     </div>

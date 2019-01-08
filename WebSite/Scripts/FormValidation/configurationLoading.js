@@ -209,6 +209,7 @@
                     callAjax("LoadMacrotypes", null, callBack, errorCallBack);
                 }
             }
+            , sort: {field: "value",dir: "asc"}
         });
     };
 
@@ -234,7 +235,8 @@
                         errorCallBack);
                 }
             },
-            serverFiltering: true
+            serverFiltering: true,
+            sort: {field: "value",dir: "asc"}
         });
     };
 
@@ -266,7 +268,8 @@
                         errorCallBack);
                 }
             },
-            serverFiltering: true
+            serverFiltering: true, 
+            sort: {field: "value",dir: "asc"}
         });
     };
 
