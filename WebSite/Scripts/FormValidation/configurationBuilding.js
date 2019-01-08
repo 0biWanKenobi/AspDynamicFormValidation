@@ -195,7 +195,7 @@
      */
     var newFormulaSegment = function(ruleName, ruleHumanReadableName, useDropDown) {
         return formulaSegmentTemplate({
-            ruleName: ruleName,
+            ruleName: ruleName.replace(/[\s,-]/g, ''),
             segmentName: ruleHumanReadableName,
             useDropDown: useDropDown
         });
@@ -260,6 +260,9 @@
      * @returns {observable} kendo viewModel
      */
     var newRuleViewModel = function(ruleName, dbId, ruleId, prevRuleOperator, ruleDescription) {
+
+        ruleName = ruleName.replace(/[\s,-]/g, '');
+
         var ruleViewModel = kendo.observable({
             id: dbId,
             ruleId: ruleId,
@@ -267,7 +270,7 @@
             prevRuleOperator: prevRuleOperator,
             ruleHasDef: false,
             ruleIsDefInFormula: false,
-            ruleDefId: ruleName + "-def",
+            ruleDefId: ruleId + "-def",
             ruleDescription: ruleDescription,
             dirty: false,
             flowIdentificators: flowIdentificators,
@@ -360,6 +363,8 @@
      */
     var loadConfigurationRule = function(prevRuleOperator, ruleDescription, ruleName, ruleId, ruleDbId) {
 
+        ruleName = ruleName.replace(/[\s,-]/g, '');
+
         var initTemplate = ruleTemplate({
             ruleName: ruleName,
             ruleId:   ruleId
@@ -387,7 +392,7 @@
         var data = {
             editorId: editorId,
             ruleId: ruleId,
-            groupName: groupName,
+            groupName: groupName.replace(/[\s,-]/g, ''),
             useDropDown: useDropDown
         };
         return ruleSegmentTemplate(data);

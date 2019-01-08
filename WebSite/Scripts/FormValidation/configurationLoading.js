@@ -60,7 +60,7 @@
         //set value here to avoid having it as true for rules added by the user 
         ruleViewModel.set("ruleIsDefInFormula", true);
         formConfigurator.bindRuleToFormulaDefinition(
-            $(rule).attr("Name"),
+            $(rule).attr("Name").replace(/[\s,-]/g, ''),
             "Regola " + ruleCount,
             $("PrevRuleOperator", rule).html() || null
         );

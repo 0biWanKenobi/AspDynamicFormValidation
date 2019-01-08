@@ -352,7 +352,7 @@ namespace CCONTACT.Business
 
                 return dataContext.Tipologies
                     .DistinctBy(t => t.TypeOne)
-                    .Where(t => t.MacroType.Equals(macrotype))
+                    .Where(t => t.MacroType == macrotype)
                     .Select( t => new {value = t.TypeOne})
                     .ToList();
             }
@@ -368,8 +368,8 @@ namespace CCONTACT.Business
                 return dataContext.Tipologies
                     .DistinctBy(t => t.TypeTwo)
                     .Where(t => 
-                        t.MacroType.Equals(macrotype)
-                        && t.TypeOne.Equals(tipologyName)
+                        t.MacroType == macrotype
+                        && t.TypeOne == tipologyName
                         )
                     .Select(t => new{ value = t.TypeTwo})
                     .ToList();
